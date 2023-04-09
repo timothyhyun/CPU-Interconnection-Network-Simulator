@@ -1,0 +1,1 @@
+/usr/bin/gcc -O2 -g -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk -mmacosx-version-min=10.15 -dynamiclib -Wl,-headerpad_max_install_names -o libsimpleCache.dylib -install_name /Users/tony/Documents/GitHub/cadss-f22-group3/simpleCache/libsimpleCache.dylib CMakeFiles/simpleCache.dir/cache.c.o CMakeFiles/simpleCache.dir/stree.c.o 
