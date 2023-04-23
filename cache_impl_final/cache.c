@@ -131,6 +131,7 @@ void (*memCallback)(int64_t) = NULL;
 typedef struct _pendingRequest {
     int64_t tag;
     int64_t addr;
+    int type; // perhaps a coherence operation?
     int processorNum;
     void(*callback)(int64_t);
     struct _pendingRequest* next;

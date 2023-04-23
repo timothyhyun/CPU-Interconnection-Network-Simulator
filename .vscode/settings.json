@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.lean4": "lean4",
+    "assert.h": "c",
+    "__locale": "c"
+  }
+}
