@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libinterconnect_impl_final.so -o libinterconnect_impl_final.so CMakeFiles/interconnect_impl_final.dir/interconnect.c.o 

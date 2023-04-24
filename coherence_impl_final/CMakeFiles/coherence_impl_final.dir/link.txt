@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libcoherence_impl_final.so -o libcoherence_impl_final.so CMakeFiles/coherence_impl_final.dir/coherence.c.o CMakeFiles/coherence_impl_final.dir/protocol.c.o CMakeFiles/coherence_impl_final.dir/stree.c.o 
