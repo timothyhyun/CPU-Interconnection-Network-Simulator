@@ -8,7 +8,6 @@
 tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
-coherence_scheme cs = MI;
 
 coher* self = NULL;
 interconn* inter_sim = NULL;
@@ -56,15 +55,15 @@ void registerCacheInterface(void(*callback)(int, int, int64_t))
     cacheCallback = callback;
 }
 
-coherence_states getState(uint64_t addr, int processorNum)
+directory_states getState(uint64_t addr, int processorNum)
 {
-    coherence_states lookState = (coherence_states) tree_find(coherStates[processorNum], addr);
-    if (lookState == UNDEF) return INVALID;
+    directory_states lookState = (directory_states) tree_find(coherStates[processorNum], addr);
+    if (lookState.state == UNDEF) return INVALID;
     
     return lookState;
 }
 
-void setState(uint64_t addr, int processorNum, coherence_states nextState)
+void setState(uint64_t addr, int processorNum, directory_states nextState)
 {
     tree_insert(coherStates[processorNum], addr, (void*)nextState);
 }
@@ -76,14 +75,14 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         // ERROR
     }
     
-    coherence_states currentState = getState(addr, processorNum);
-    coherence_states nextState;
+    directory_states currentState = getState(addr, processorNum);
+    directory_states nextState;
     cache_action ca;
 
     nextState = directory(reqType, &ca, currentState, addr, processorNum);
     
 
-    
+
     switch(ca)
     {
         case DATA_RECV:
@@ -101,9 +100,9 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     
     // IF the destination state is invalid, that is an implicit state
     //   and does not need to be stored in the tree.
-    if (nextState == INVALID)
+    if (nextState.state == INVALID)
     {
-        if (currentState != INVALID)
+        if (currentState.state != INVALID)
         {
             tree_remove(coherStates[processorNum], addr);
         }
@@ -116,8 +115,26 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     return 0;
 }
 
+
 // TODO - is_read needs to also encompass evictions from cache
 //   this is beyond the scope of the next assignment
+
+uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
+{
+    if (processorNum < 0 || processorNum >= processorCount)
+    {
+        // ERROR
+    }
+    
+    directory_states currentState = getState(addr, processorNum);
+    directory_states nextState;
+    uint8_t permAvail = 0;
+    nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
+    setState(addr, processorNum, nextState);
+    
+    return permAvail;
+}
+
 
 int tick()
 {

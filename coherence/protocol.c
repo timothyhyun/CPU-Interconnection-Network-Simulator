@@ -20,14 +20,30 @@ void indicateShared(uint64_t addr, int procNum)
     inter_sim->busReq(SHARED, addr, procNum);
 }
 
-coherence_states directory(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum) {
+directory_states directory(bus_req_type reqType, cache_action* ca, directory_states currentState, uint64_t addr, int procNum) {
     *ca = NO_ACTION;
-    switch(currentState) {
+    switch(directory_states.state) {
         case EXCLUSIVE:
 
         case SHARED_STATE:
 
         case INVALID:
+
+        default:
+            fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
+            break;
+    }
+    return INVALID;
+}
+
+directory_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum) {
+    switch(currentState.state)
+    {
+        case INVALID:
+            
+        case MODIFIED:
+            
+        case SHARED_STATE:
 
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
