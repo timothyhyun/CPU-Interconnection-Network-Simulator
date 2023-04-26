@@ -40,7 +40,7 @@ typedef enum _cache_action {
   INVALIDATE
 } cache_action;
 
-directory_states directory(bus_req_type reqType, cache_action* ca, directory_states currentState, uint64_t addr, int procNum);
+directory_states directory(uint8_t is_read, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum);
 directory_states cacheDirectory(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
 
 

@@ -4,11 +4,14 @@
 struct _coher;
 
 typedef enum _bus_req_type {
+    // NOT NEEDED
     NO_REQ,
     BUSRD,
     BUSWR,
     DATA,
+    // NOT NEEDED RN 
     SHARED,
+    // NEVER USED
     FLUSH
 } bus_req_type;
 

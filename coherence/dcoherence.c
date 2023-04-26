@@ -4,7 +4,8 @@
 #include "coher_internal.h"
 
 #include "stree.h"
-
+// TREE = DIRECTORY
+tree_t** directoryStates = NULL;
 tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
@@ -30,9 +31,11 @@ coher* init(coher_sim_args* csa)
     }
     
     coherStates = malloc(sizeof(tree_t*) * processorCount);
+    coherStates = malloc(sizeof(tree_t*) * processorCount);
     for (int i = 0; i < processorCount; i++)
     {
         coherStates[i] = tree_new();
+        directoryStates[i] = tree_new();
     }
     
     inter_sim = csa->inter;
@@ -55,15 +58,29 @@ void registerCacheInterface(void(*callback)(int, int, int64_t))
     cacheCallback = callback;
 }
 
-directory_states getState(uint64_t addr, int processorNum)
-{
-    directory_states lookState = (directory_states) tree_find(coherStates[processorNum], addr);
+directory_states getDirectoryState() {
+    directory_states lookState = (directory_states) tree_find(directoryStates[processorNum], addr);
     if (lookState.state == UNDEF) return INVALID;
+
+    return lookState;
+}
+
+void setDirectoryState(uint64_t addr, int processorNum, directory_states nextState) 
+{
+    tree_insert(directoryStates[processorNum], addr, (void*)nextState);
+}
+
+
+
+coherence_states getState(uint64_t addr, int processorNum)
+{
+    coherence_states lookState = (coherence_states) tree_find(coherStates[processorNum], addr);
+    if (lookState == UNDEF) return INVALID;
     
     return lookState;
 }
 
-void setState(uint64_t addr, int processorNum, directory_states nextState)
+void setState(uint64_t addr, int processorNum, coherence_states nextState)
 {
     tree_insert(coherStates[processorNum], addr, (void*)nextState);
 }
@@ -75,14 +92,11 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
         // ERROR
     }
     
-    directory_states currentState = getState(addr, processorNum);
-    directory_states nextState;
+    coherence_states currentState = getState(addr, processorNum);
+    coherence_states nextState;
     cache_action ca;
 
     nextState = directory(reqType, &ca, currentState, addr, processorNum);
-    
-
-
     switch(ca)
     {
         case DATA_RECV:
@@ -100,9 +114,9 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     
     // IF the destination state is invalid, that is an implicit state
     //   and does not need to be stored in the tree.
-    if (nextState.state == INVALID)
+    if (nextState == INVALID)
     {
-        if (currentState.state != INVALID)
+        if (currentState != INVALID)
         {
             tree_remove(coherStates[processorNum], addr);
         }
@@ -126,8 +140,8 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
         // ERROR
     }
     
-    directory_states currentState = getState(addr, processorNum);
-    directory_states nextState;
+    coherence_states currentState = getState(addr, processorNum);
+    coherence_states nextState;
     uint8_t permAvail = 0;
     nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
     setState(addr, processorNum, nextState);
