@@ -17,6 +17,7 @@ typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
 
 uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum);
+uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 void registerCacheInterface(void(*callback)(int, int, int64_t));
 
 coher* init(coher_sim_args* csa)
@@ -85,6 +86,8 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
     tree_insert(coherStates[processorNum], addr, (void*)nextState);
 }
 
+// processorNum is dest proc
+// Do I need to add origin processor? Or else how do I send data back????
 uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
 {
     if (processorNum < 0 || processorNum >= processorCount)
@@ -149,10 +152,28 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     return permAvail;
 }
 
+// Takes requests from interconnect and cache controller and places them in queue
+// all go to directory
+void directoryReq()
+{
+
+
+
+}
+
+// Takes request from interconnect and directory and places them in queue
+// all go to processCache
+void cacheReq()
+{
+
+}
 
 int tick()
 {
     return inter_sim->si.tick();
+    // Start processing accepts and departures 
+
+
 }
 
 int finish(int outFd)

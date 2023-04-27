@@ -40,8 +40,11 @@ typedef enum _cache_action {
   INVALIDATE
 } cache_action;
 
+
+// Process directory requests
 directory_states directory(uint8_t is_read, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum);
-directory_states cacheDirectory(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
+// Change Cache State then Send to Directory or Interconnect
+coherence_states cacheDirectory(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
 
 
 coherence_states cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
@@ -58,5 +61,8 @@ coherence_states snoopMOESI(bus_req_type reqType, cache_action* ca, coherence_st
 
 coherence_states cacheMESIF(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
 coherence_states snoopMESIF(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
+
+int findHomeProcessor(uint64_t addr);
+
 
 #endif

@@ -1,5 +1,6 @@
 #include "coher_internal.h"
 
+
 void sendBusRd(uint64_t addr, int procNum)
 {
     inter_sim->busReq(BUSRD, addr, procNum);
@@ -20,23 +21,127 @@ void indicateShared(uint64_t addr, int procNum)
     inter_sim->busReq(SHARED, addr, procNum);
 }
 
-directory_states directory(bus_req_type reqType, cache_action* ca, directory_states currentState, uint64_t addr, int procNum) {
-    *ca = NO_ACTION;
-    switch(directory_states.state) {
+// NEW PROTOCOLS 
+// SEND INVALID
+// CHANGE ARGS TO INCLUDE PROC NUMBER
+
+void sendRd(uint64_t addr, int procNum, int rprocNum) {
+    // If to own directory: place in directory rec queue 
+    // else place in inter->busReq
+    if (procNum == rprocNum) {
+        
+    } else {
+        // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
+        inter_sim->busReq(BUSRD, addr, procNum);
+    }
+}
+
+void sendWr(uint64_t addr, int procNum, int rprocNum) {
+    if (procNum == rprocNum) {
+
+    } else {
+        inter_sim->busReq(BUSWR, addr, procNum);
+    }
+
+}
+
+// send from directory to cache
+void sendFetch(uint64_t addr, int procNum, int rprocNum) {
+    // need additional arg in busreq for destination
+    inter_sim->busReq(FETCH, addr, procNum);
+}
+
+// Cache to Cache
+void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
+    
+}
+
+// send from directory to cache
+void sendInvalidate(uint64_t addr, int procNum, int rprocNum){
+    inter_sim->busReq(INVALIDATE, addr, procNum);
+}
+
+int findHomeProcessor(uint64_t addr, int procNum) {
+    return procNum;
+}
+
+// procnum: current processor number
+directory_states directory(bus_req_type reqType, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum) {
+    switch(currentState.state) {
         case EXCLUSIVE:
-
+            if (reqType == BUSRD) {
+                // SEND FETCH
+                for (int i = 0; i < 4; i++) {
+                    if (currentState.directory[i] == 1) {
+                        sendFetch(addr, procNum, i);
+                        break;
+                    }
+                }
+                // DEMOTE TO SHARED AND ADD PROCESSOR
+                currentState.directory[procNum] = 1;
+                currentState.state = SHARED_STATE;
+            } else {
+                // SEND Invalidates to everybody
+                for (int i = 0; i < 4; i++) {
+                    if (currentState.directory[i] == 1) {
+                        currentState.directory[i] = 0;
+                        sendFetch(addr, procNum, i);
+                        sendInvalidate(addr, procNum, i);
+                        break;
+                    }
+                }
+                currentState.directory[procNum] = 1;
+            }
+            break;
         case SHARED_STATE:
-
+            if (reqType == BUSRD) {
+                // SEND READ
+                for (int i = 0; i < 4; i++) {
+                    if (currentState.directory[i] == 1) {
+                        sendFetch(addr, procNum, i);
+                        break;
+                    }
+                }
+                currentState.directory[procNum] = 1;
+            } else {
+                // SEND Invalidates to everybody
+                for (int i = 0; i < 4; i++) {
+                    if (currentState.directory[i] == 1) {
+                        sendFetch(addr, procNum, i);
+                        break;
+                    }
+                }
+                for (int i = 0; i < 4; i++) {
+                    if (currentState.directory[i] == 1) {
+                        currentState.directory[i] = 0;
+                        sendInvalidate(addr, procNum, i);
+                    }
+                }
+                currentState.directory[procNum] = 1;
+                currentState.state = EXCLUSIVE;
+            }
+            break;
         case INVALID:
-
+            currentState.directory[procNum] = 1;
+            // add to cache recieving queue - Fetch?
+            if (reqType == BUSRD) {
+                // SEND DATA TO ASKING PROC
+                return SHARED_STATE;
+            } else {
+                // MAYBE SEND DATA
+                return EXCLUSIVE;
+            }
+            break;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
             break;
     }
-    return INVALID;
+    return currentState;
 }
 
-directory_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum) {
+
+coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {
+    int dest = findHomeProcessor(addr, procNum);
     switch(currentState)
     {
         case INVALID:
@@ -48,10 +153,10 @@ directory_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, directory_s
             *permAvail = 0;
             if (is_read) 
             {
-                sendBusRd(addr, procNum);
+                sendRd(addr, procNum, dest);
                 return INVALID_SHARED;
             } 
-            sendBusWr(addr, procNum);
+            sendWr(addr, procNum, dest);
             return INVALID_MODIFIED;
         case MODIFIED:
         /*
@@ -72,7 +177,7 @@ directory_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, directory_s
                 return SHARED_STATE;
             } 
             *permAvail = 0;
-            sendBusWr(addr, procNum);
+            sendWr(addr, procNum, dest);
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
             fprintf(stderr, "IM state on %lx, but request %d\n", addr, is_read);
@@ -93,8 +198,70 @@ directory_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, directory_s
     
     return INVALID;
 }
-
-
+// Directory version of "snooping"
+// Cache recieves request from directory
+// Not sure why procNum is the origin processor or how else do we send anything back???
+// ONLY CAN RECIEVE: 
+// Invalidates 
+// Fetch
+coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum) {
+    *ca = NO_ACTION;
+    switch(currentState)
+    {
+        case INVALID:
+            // Cache does not have. go to memory (out of scope)
+            return INVALID;
+        case MODIFIED:
+            if (reqType = FETCH) 
+            {
+                sendDataBack(addr, procNum);
+                return SHARED_STATE;
+            } 
+            else if (reqType = INVALIDATE) {
+                sendDataBack(addr, procNum);
+                *ca = INVALIDATE;
+                return INVALID;
+            }
+            return MODIFIED;
+        case SHARED_STATE:
+            if (reqType = FETCH) 
+            {
+                sendDataBack(addr, procNum);
+                return SHARED_STATE;
+            } 
+            else if (reqType = INVALIDATE) {
+                sendDataBack(addr, procNum);
+                *ca = INVALIDATE;
+                return INVALID;
+            }
+            return SHARED_STATE;
+        case INVALID_MODIFIED:
+            if (reqType == DATA || reqType == SHARED)
+            {
+                *ca = DATA_RECV;
+                return MODIFIED;
+            }
+            return INVALID_MODIFIED;
+        case INVALID_SHARED:
+            if (reqType == DATA || reqType == SHARED)
+            {
+                *ca = DATA_RECV;
+                return SHARED_STATE;
+            }
+            return INVALID_SHARED;
+        case SHARED_MODIFIED:
+            if (reqType == DATA || reqType == SHARED)
+            {
+                *ca = DATA_RECV;
+                return MODIFIED;
+            }
+            return SHARED_MODIFIED;
+        default:
+            fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
+            break;
+    }
+    return INVALID;
+}
 
 coherence_states cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum)
 {
