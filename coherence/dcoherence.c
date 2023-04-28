@@ -5,13 +5,13 @@
 
 #include "stree.h"
 // TREE = DIRECTORY
-tree_t** directoryStates = NULL;
 tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
 
 coher* self = NULL;
 interconn* inter_sim = NULL;
+directory_sim* direct_sim = NULL;
 
 typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
@@ -32,15 +32,14 @@ coher* init(coher_sim_args* csa)
     }
     
     coherStates = malloc(sizeof(tree_t*) * processorCount);
-    coherStates = malloc(sizeof(tree_t*) * processorCount);
+    
     for (int i = 0; i < processorCount; i++)
     {
         coherStates[i] = tree_new();
-        directoryStates[i] = tree_new();
     }
     
     inter_sim = csa->inter;
-    
+    direct_sim = csa->direct;
     self = malloc(sizeof(coher));
     self->si.tick = tick;
     self->si.finish = finish;
@@ -50,6 +49,8 @@ coher* init(coher_sim_args* csa)
     self->registerCacheInterface = registerCacheInterface;
     
     inter_sim->registerCoher(self);
+    direct_sim->registerCoher(self);
+
     
     return self;
 }
@@ -57,18 +58,6 @@ coher* init(coher_sim_args* csa)
 void registerCacheInterface(void(*callback)(int, int, int64_t))
 {
     cacheCallback = callback;
-}
-
-directory_states getDirectoryState() {
-    directory_states lookState = (directory_states) tree_find(directoryStates[processorNum], addr);
-    if (lookState.state == UNDEF) return INVALID;
-
-    return lookState;
-}
-
-void setDirectoryState(uint64_t addr, int processorNum, directory_states nextState) 
-{
-    tree_insert(directoryStates[processorNum], addr, (void*)nextState);
 }
 
 
@@ -152,38 +141,40 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     return permAvail;
 }
 
-// Takes requests from interconnect and cache controller and places them in queue
-// all go to directory
-void directoryReq()
-{
-
-
-
-}
 
 // Takes request from interconnect and directory and places them in queue
 // all go to processCache
-void cacheReq()
+void cacheReq() 
 {
-
+    // Add to pending Queue
 }
 
+
+
+
+
+// Departures are simple because they all go through the interconnect queue.
+// No need to change anything. 
 int tick()
 {
-    return inter_sim->si.tick();
-    // Start processing accepts and departures 
+    // Start processing Queue
 
+    
+    direct_sim->si.tick();
+    return inter_sim->si.tick();
+    
 
 }
 
 int finish(int outFd)
 {
+    direct_sim->si.finish(outFd);
     return inter_sim->si.finish(outFd);
 }
 
 int destroy(void)
 {
     // TODO
-    
+    direct_sim->si.destroy();
     return inter_sim->si.destroy();
 }

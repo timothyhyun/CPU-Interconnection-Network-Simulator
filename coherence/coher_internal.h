@@ -21,11 +21,6 @@ typedef enum _coherence_states {
   FORWARD_MODIFIED
 } coherence_states;
 
-typedef struct _directory_states {
-  coherence_states state;
-  int directory[4];
-} directory_states;
-
 typedef enum _coherence_scheme {
   MI,
   MSI,
@@ -41,10 +36,9 @@ typedef enum _cache_action {
 } cache_action;
 
 
-// Process directory requests
-directory_states directory(uint8_t is_read, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum);
 // Change Cache State then Send to Directory or Interconnect
-coherence_states cacheDirectory(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
+coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
+coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
 
 
 coherence_states cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);

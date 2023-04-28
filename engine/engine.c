@@ -6,7 +6,7 @@
 #include <processor.h>
 #include <branch.h>
 #include <unistd.h>
-
+#include <directory.h>
 #include "config.h"
 #include "engine.h"
 
@@ -118,6 +118,7 @@ int main(int argc, char** argv)
     struct sim* isim = NULL;
     struct sim* osim = NULL;
     struct sim* trace = NULL;
+    struct sim* dsim = NULL;
     char* settingFile = NULL;
     char* cacheName = NULL;
     char* branchName = NULL;
@@ -193,6 +194,8 @@ int main(int argc, char** argv)
             return 0;
         }
     }
+    // Loading directory sim. Not how this works and if it will :/
+    dsim = loadSim("directory", "directory");
     
     if (coherName == NULL)
     {
@@ -255,6 +258,7 @@ int main(int argc, char** argv)
     branch* branch_sim = NULL;
     coher* coher_sim = NULL;
     interconn* inter_sim = NULL;
+    directory_sim* direct_sim = NULL;
     
     
     arg = getSettings("interconnect", &argCount);
@@ -271,7 +275,14 @@ int main(int argc, char** argv)
     {
         
     }
-    
+    // Add directory
+    directory_sim_args dsa;
+    dsa.inter = inter_sim;
+
+    if ((direct_sim = dsim->init(&dsa)) == NULL)
+    {
+        
+    }
     
     arg = getSettings("coherence", &argCount);
     if (arg == NULL)

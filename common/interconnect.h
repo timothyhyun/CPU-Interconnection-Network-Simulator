@@ -9,6 +9,8 @@ typedef enum _bus_req_type {
     BUSRD,
     BUSWR,
     DATA,
+    FETCH, 
+    INVALIDATE,
     // NOT NEEDED RN 
     SHARED,
     // NEVER USED

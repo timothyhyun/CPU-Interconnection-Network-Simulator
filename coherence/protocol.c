@@ -1,4 +1,5 @@
 #include "coher_internal.h"
+#include "directory.h"
 
 
 void sendBusRd(uint64_t addr, int procNum)
@@ -29,7 +30,7 @@ void sendRd(uint64_t addr, int procNum, int rprocNum) {
     // If to own directory: place in directory rec queue 
     // else place in inter->busReq
     if (procNum == rprocNum) {
-        
+        // Go to directory
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
         inter_sim->busReq(BUSRD, addr, procNum);
@@ -48,7 +49,7 @@ void sendWr(uint64_t addr, int procNum, int rprocNum) {
 // send from directory to cache
 void sendFetch(uint64_t addr, int procNum, int rprocNum) {
     // need additional arg in busreq for destination
-    inter_sim->busReq(FETCH, addr, procNum);
+    
 }
 
 // Cache to Cache
@@ -58,85 +59,11 @@ void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
 
 // send from directory to cache
 void sendInvalidate(uint64_t addr, int procNum, int rprocNum){
-    inter_sim->busReq(INVALIDATE, addr, procNum);
+    
 }
 
 int findHomeProcessor(uint64_t addr, int procNum) {
     return procNum;
-}
-
-// procnum: current processor number
-directory_states directory(bus_req_type reqType, uint8_t* permAvail, directory_states currentState, uint64_t addr, int procNum) {
-    switch(currentState.state) {
-        case EXCLUSIVE:
-            if (reqType == BUSRD) {
-                // SEND FETCH
-                for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        sendFetch(addr, procNum, i);
-                        break;
-                    }
-                }
-                // DEMOTE TO SHARED AND ADD PROCESSOR
-                currentState.directory[procNum] = 1;
-                currentState.state = SHARED_STATE;
-            } else {
-                // SEND Invalidates to everybody
-                for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        currentState.directory[i] = 0;
-                        sendFetch(addr, procNum, i);
-                        sendInvalidate(addr, procNum, i);
-                        break;
-                    }
-                }
-                currentState.directory[procNum] = 1;
-            }
-            break;
-        case SHARED_STATE:
-            if (reqType == BUSRD) {
-                // SEND READ
-                for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        sendFetch(addr, procNum, i);
-                        break;
-                    }
-                }
-                currentState.directory[procNum] = 1;
-            } else {
-                // SEND Invalidates to everybody
-                for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        sendFetch(addr, procNum, i);
-                        break;
-                    }
-                }
-                for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        currentState.directory[i] = 0;
-                        sendInvalidate(addr, procNum, i);
-                    }
-                }
-                currentState.directory[procNum] = 1;
-                currentState.state = EXCLUSIVE;
-            }
-            break;
-        case INVALID:
-            currentState.directory[procNum] = 1;
-            // add to cache recieving queue - Fetch?
-            if (reqType == BUSRD) {
-                // SEND DATA TO ASKING PROC
-                return SHARED_STATE;
-            } else {
-                // MAYBE SEND DATA
-                return EXCLUSIVE;
-            }
-            break;
-        default:
-            fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
-            break;
-    }
-    return currentState;
 }
 
 
@@ -262,6 +189,8 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
     }
     return INVALID;
 }
+
+// BELOW IS SNOOPING NOT NEEDED
 
 coherence_states cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum)
 {
