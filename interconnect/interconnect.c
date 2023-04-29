@@ -132,6 +132,7 @@ int tick()
                 {
                     if (pendingRequest->procNum != i)
                     {
+                        // This is the broadcast I am assuming 
                         coherComp->busReq(pendingRequest->brt, pendingRequest->addr, i);
                     }
                 }

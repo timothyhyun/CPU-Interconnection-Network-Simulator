@@ -4,6 +4,22 @@
 #include "coher_internal.h"
 
 #include "stree.h"
+
+
+typedef struct _cache_req {
+    bus_req_type brt;
+    uint64_t addr;
+    int procNum;
+    int nextProcNum; 
+    struct _cache_req *next;
+} cache_req;
+
+
+cache_req* pendingRequest = NULL;
+cache_req* queuedRequests;
+const int CONTROLLER_DELAY = 5;
+
+
 // TREE = DIRECTORY
 tree_t** coherStates = NULL;
 int processorCount = 1;
@@ -144,7 +160,7 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 
 // Takes request from interconnect and directory and places them in queue
 // all go to processCache
-void cacheReq() 
+void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum) 
 {
     // Add to pending Queue
 }
@@ -159,7 +175,7 @@ int tick()
 {
     // Start processing Queue
 
-    
+
     direct_sim->si.tick();
     return inter_sim->si.tick();
     

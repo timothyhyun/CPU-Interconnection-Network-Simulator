@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 extern interconn* inter_sim;
+extern directory_sim* direct_sim;
 
 typedef enum _coherence_states {
   UNDEF = 0,  // As tree find returns NULL, we need an unused for NULL

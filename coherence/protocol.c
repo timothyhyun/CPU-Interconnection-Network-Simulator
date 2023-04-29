@@ -25,12 +25,14 @@ void indicateShared(uint64_t addr, int procNum)
 // NEW PROTOCOLS 
 // SEND INVALID
 // CHANGE ARGS TO INCLUDE PROC NUMBER
-
+// ProcNum: directory NUm 
+// RProcNum: requesting proc
 void sendRd(uint64_t addr, int procNum, int rprocNum) {
     // If to own directory: place in directory rec queue 
     // else place in inter->busReq
     if (procNum == rprocNum) {
         // Go to directory
+        direct_sim->directoryReq(BUSRD, addr, procNum, rprocNum);
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
         inter_sim->busReq(BUSRD, addr, procNum);
@@ -39,28 +41,19 @@ void sendRd(uint64_t addr, int procNum, int rprocNum) {
 
 void sendWr(uint64_t addr, int procNum, int rprocNum) {
     if (procNum == rprocNum) {
-
+        direct_sim->directoryReq(BUSWR, addr, procNum, rprocNum);
     } else {
         inter_sim->busReq(BUSWR, addr, procNum);
     }
 
 }
 
-// send from directory to cache
-void sendFetch(uint64_t addr, int procNum, int rprocNum) {
-    // need additional arg in busreq for destination
-    
-}
 
 // Cache to Cache
 void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
     
 }
 
-// send from directory to cache
-void sendInvalidate(uint64_t addr, int procNum, int rprocNum){
-    
-}
 
 int findHomeProcessor(uint64_t addr, int procNum) {
     return procNum;
