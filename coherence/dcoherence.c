@@ -67,6 +67,9 @@ coher* init(coher_sim_args* csa)
     inter_sim->registerCoher(self);
     direct_sim->registerCoher(self);
 
+    queuedRequests = malloc(sizeof(cache_req));
+    queuedRequests = NULL;
+
     
     return self;
 }
@@ -93,7 +96,7 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
 
 // processorNum is dest proc
 // Do I need to add origin processor? Or else how do I send data back????
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum)
 {
     if (processorNum < 0 || processorNum >= processorCount)
     {
@@ -104,7 +107,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum)
     coherence_states nextState;
     cache_action ca;
 
-    nextState = directory(reqType, &ca, currentState, addr, processorNum);
+    nextState = processCache(reqType, &ca, currentState, addr, processorNum);
     switch(ca)
     {
         case DATA_RECV:
@@ -160,9 +163,26 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 
 // Takes request from interconnect and directory and places them in queue
 // all go to processCache
+// rproc: processorNum that sent request
 void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum) 
 {
     // Add to pending Queue
+    if (pendingRequest == NULL) {
+        cache_req* nextReq = calloc(1, sizeof(cache_req));
+        nextReq->brt = reqType;
+        nextReq->addr = addr;
+        nextReq->processorNum;
+        nextReq->nextProcNum = nextProcessorNum;
+        pendingRequest = nextReq;
+        countDown = CONTROLLER_DELAY;
+    } else {
+        cache_req* nextReq = calloc(1, sizeof(cache_req));
+        nextReq->brt = reqType;
+        nextReq->addr = addr;
+        nextReq->processorNum;
+        nextReq->nextProcNum = nextProcessorNum;
+        queuedRequests = nextReq;
+    }
 }
 
 
@@ -174,6 +194,24 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
 int tick()
 {
     // Start processing Queue
+    if (countDown > 0) {
+        countDown--;
+        if (countDown == 0) {
+            if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
+                direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+            } else {
+                busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+            }
+            free(pendingRequest);
+            pendingRequest = NULL;
+        }
+    } else {
+        if (queuedRequests != NULL) {
+            pendingRequest = queuedRequests;
+            queuedRequests = NULL;
+            countDown = CONTROLLER_DELAY;
+        }
+    }
 
 
     direct_sim->si.tick();

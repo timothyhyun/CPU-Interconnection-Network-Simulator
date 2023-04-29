@@ -72,7 +72,7 @@ directory_sim* init(directory_sim_args* dsa)
     self->si.destroy = destroy;
     self->registerCoher = registerCoher;
 
-    queuedRequests = malloc(sizeof(directory_req*));
+    queuedRequests = malloc(sizeof(directory_req));
     queuedRequests = NULL;
 
 
