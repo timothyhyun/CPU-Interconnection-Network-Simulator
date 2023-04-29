@@ -32,8 +32,12 @@ directory_sim* direct_sim = NULL;
 typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
 
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum);
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum);
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
+
+// processorNum: current processor num 
+// nextProcessorNum: # to reply to
+void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum);
 void registerCacheInterface(void(*callback)(int, int, int64_t));
 
 coher* init(coher_sim_args* csa)
@@ -107,7 +111,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
     coherence_states nextState;
     cache_action ca;
 
-    nextState = processCache(reqType, &ca, currentState, addr, processorNum);
+    nextState = processCache(reqType, &ca, currentState, addr, processorNum,rprocessorNum);
     switch(ca)
     {
         case DATA_RECV:
@@ -199,6 +203,7 @@ int tick()
         if (countDown == 0) {
             if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
                 direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+            // Is either fetch, invalidate, or data
             } else {
                 busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
             }

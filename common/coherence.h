@@ -20,7 +20,7 @@ typedef struct _coher {
     sim_interface si;
     void (*registerCacheInterface)(void(*callback)(int, int, int64_t));
     uint8_t (*permReq)(uint8_t is_read, uint64_t addr, int processorNum);
-    uint8_t (*busReq)(bus_req_type reqType, uint64_t addr, int processorNum);
+    uint8_t (*busReq)(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum);
     void (*cacheReq)(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum);
 } coher;
 

@@ -15,6 +15,8 @@ typedef struct _bus_req {
     bus_req_state currentState;
     uint64_t addr;
     int procNum;
+    int rprocNum;
+    int nextProcNum;
     uint8_t shared;
     uint8_t data;
     struct _bus_req *next;
@@ -33,7 +35,7 @@ const int CACHE_TRANSFER = 10;
 const int BUS_TIME = 90;  // TODO - model using a memory component
 
 void registerCoher(coher* cc);
-void busReq(bus_req_type brt, uint64_t addr, int procNum);
+void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum);
 
 interconn* init(inter_sim_args* isa)
 {
@@ -72,7 +74,11 @@ void registerCoher(coher* cc)
     coherComp = cc;
 }
 
-void busReq(bus_req_type brt, uint64_t addr, int procNum)
+// procNum: destination
+// rprocNum: sender
+// nextProcNum: nextProcNum (if fetch this is the is the processor to reply to)
+
+void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum)
 {
     if (pendingRequest == NULL)
     {
@@ -83,6 +89,8 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         nextReq->currentState = WAITING_CACHE;
         nextReq->addr = addr;
         nextReq->procNum = procNum;
+        nextReq->rprocNum = rprocNum;
+        nextReq->nextProcNum = nextProcNum;
         
         pendingRequest = nextReq;
         countDown = CACHE_DELAY;
@@ -111,6 +119,8 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
         nextReq->currentState = QUEUED;
         nextReq->addr = addr;
         nextReq->procNum = procNum;
+        nextReq->rprocNum = rprocNum;
+        nextReq->nextProcNum = nextProcNum;
         
         queuedRequests[procNum] = nextReq;
     }
@@ -133,7 +143,7 @@ int tick()
                     if (pendingRequest->procNum != i)
                     {
                         // This is the broadcast I am assuming 
-                        coherComp->busReq(pendingRequest->brt, pendingRequest->addr, i);
+                        coherComp->cacheReq(pendingRequest->brt, pendingRequest->addr, i, pendingRequest->nextProcNum);
                     }
                 }
                 if (pendingRequest->data == 1)
@@ -145,7 +155,7 @@ int tick()
             {
                 bus_req_type brt = DATA;
                 if (pendingRequest->shared == 1) brt = SHARED;
-                coherComp->busReq(brt, pendingRequest->addr, pendingRequest->procNum);
+                coherComp->cacheReq(brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -153,7 +163,7 @@ int tick()
             {
                 bus_req_type brt = pendingRequest->brt;
                 if (pendingRequest->shared == 1) brt = SHARED;
-                coherComp->busReq(brt, pendingRequest->addr, pendingRequest->procNum);
+                coherComp->cacheReq(brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
                 free(pendingRequest);
                 pendingRequest = NULL;
             }

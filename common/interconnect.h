@@ -26,7 +26,7 @@ typedef struct _inter_sim_args {
 
 typedef struct _interconn {
     sim_interface si;
-    void (*busReq)(bus_req_type brt, uint64_t addr, int procNum);
+    void (*busReq)(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum);
     void (*registerCoher)(struct _coher* coherComp);
 } interconn;
 

@@ -39,6 +39,7 @@ void sendFetch(uint64_t addr, int procNum, int rprocNum, int directoryNum) {
         coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
     } else {
         // interconnect request
+        inter_sim->busReq(FETCH, addr, procNum, directoryNum, rprocNum);
     }
 }
 
@@ -48,6 +49,8 @@ void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
         coherComp->cacheReq(INVALIDATE, addr, procNum, -1);
     } else {
         // Interconnect request
+        // No reply needed 
+        inter_sim->busReq(INVALIDATE, addr, procNum, directoryNum, -1);
     }
 }
 
@@ -110,7 +113,8 @@ directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // SEND FETCH
                 for (int i = 0; i < 4; i++) {
                     if (currentState.directory[i] == 1) {
-                        sendFetch(addr, rprocNum, i, procNum);
+                        // send fetch to process 1 (currently at procNum), reply to rprocNum
+                        sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
@@ -122,7 +126,7 @@ directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 for (int i = 0; i < 4; i++) {
                     if (currentState.directory[i] == 1) {
                         currentState.directory[i] = 0;
-                        sendFetch(addr, rprocNum, i, procNum);
+                        sendFetch(addr, i, procNum, rprocNum);
                         sendInvalidate(addr, procNum, i);
                         break;
                     }
@@ -135,7 +139,7 @@ directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
                     if (currentState.directory[i] == 1) {
-                        sendFetch(addr, rprocNum, i, procNum);
+                        sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
@@ -144,7 +148,7 @@ directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
                     if (currentState.directory[i] == 1) {
-                        sendFetch(addr, rprocNum, i, procNum);
+                        sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
@@ -163,9 +167,11 @@ directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int
             // add to cache recieving queue - Fetch?
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
+                //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
                 return SHARED_STATE;
             } else {
                 // MAYBE SEND DATA
+                //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
                 return EXCLUSIVE;
             }
             break;

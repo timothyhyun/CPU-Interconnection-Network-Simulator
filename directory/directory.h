@@ -29,7 +29,7 @@ typedef struct _directory_states {
 
 typedef struct _directory_sim{
     sim_interface si;
-    void (*directoryReq)(bus_req_type reqType, directory_states currentState, uint64_t addr, int procNum);
+    void (*directoryReq)(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum);
     void (*registerCoher)(struct _coher* coherComp);
 } directory_sim;
 
