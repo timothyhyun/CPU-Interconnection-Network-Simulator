@@ -1,3 +1,12 @@
+/**
+ * @file cache_internal.c
+ * @brief Implements cache operations, i.e. store/load
+ * 
+ * As a simplifying assumption, ignores multi-line accesses.
+ * 
+ * @author Tony Yu   <tonyy@andrew.cmu.edu>
+ */
+
 #include "cache_internal.h"
 
 #include <assert.h>
@@ -111,11 +120,6 @@ int load_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_pa
             }
             (*cache_update)(currline, MISS, 0);
             // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
-            if ((size + block_offset) > B * (U - sub_block))
-            {
-                int jump_size = B * (U - sub_block) - block_offset;
-                return_stack += load_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-            }
             return return_stack;
         }
         else if (currline->tag == tag)
@@ -139,12 +143,6 @@ int load_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_pa
                 (*cache_update)(cache[set_idx][j], DEFAULT, 1);
             }
             (*cache_update)(currline, HIT, 0);
-            // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
-            if ((size + block_offset) > B * (U - sub_block))
-            {
-                int jump_size = B * (U - sub_block) - block_offset;
-                return_stack += load_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-            }
             return return_stack;
         }
     }
@@ -177,11 +175,6 @@ int load_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_pa
     stats->evictions++;
     stats->misses++;
     // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
-    if ((size + block_offset) > B * (U - sub_block))
-    {
-        int jump_size = B * (U - sub_block) - block_offset;
-        return_stack += load_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-    }
     return return_stack;
 }
 
@@ -234,11 +227,6 @@ int store_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_p
                 (*cache_update)(cache[set_idx][j], DEFAULT, 0);
             }
             (*cache_update)(currline, MISS, 0);
-            if ((size + block_offset) > B * (U - sub_block))
-            {
-                int jump_size = B * (U - sub_block) - block_offset;
-                return_stack += store_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-            }
             // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
             return return_stack;
         }
@@ -265,11 +253,6 @@ int store_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_p
             }
             (*cache_update)(currline, HIT, 0);
             // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
-            if ((size + block_offset) > B * (U - sub_block))
-            {
-                int jump_size = B * (U - sub_block) - block_offset;
-                return_stack += store_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-            }
             return return_stack;
         }
     }
@@ -308,10 +291,5 @@ int store_cache(cache_t *cache, int size, uint64_t memAddress, parsed_t *cache_p
         return_stack += store_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
     }
     // printf("return_stack: %ld, line %ld\n", return_stack, __LINE__);
-    if ((size + block_offset) > B * (U - sub_block))
-    {
-        int jump_size = B * (U - sub_block) - block_offset;
-        return_stack += load_cache(cache, size - jump_size, memAddress + jump_size, cache_parameters, cache_update);
-    }
     return return_stack;
 }
