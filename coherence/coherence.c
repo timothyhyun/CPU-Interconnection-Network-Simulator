@@ -12,6 +12,7 @@ coherence_scheme cs = MI;
 
 coher* self = NULL;
 interconn* inter_sim = NULL;
+direc* direct_sim = NULL;
 
 typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
