@@ -258,7 +258,7 @@ int main(int argc, char** argv)
     branch* branch_sim = NULL;
     coher* coher_sim = NULL;
     interconn* inter_sim = NULL;
-    directory_sim* direct_sim = NULL;
+    direc* direct_sim = NULL;
     
     
     arg = getSettings("interconnect", &argCount);
@@ -275,10 +275,18 @@ int main(int argc, char** argv)
     {
         
     }
-    // Add directory
-    directory_sim_args dsa;
-    dsa.inter = inter_sim;
 
+    // Add directory
+    arg = getSettings("directory", &argCount);
+    if (arg = NULL)
+    {
+        
+    }
+    direc_sim_args dsa;
+    dsa.arg_count = argCount;
+    dsa.arg_list = arg;
+    dsa.inter = inter_sim;
+    optind = 1;
     if ((direct_sim = dsim->init(&dsa)) == NULL)
     {
         
@@ -294,6 +302,7 @@ int main(int argc, char** argv)
     osa.arg_count = argCount;
     osa.arg_list = arg;
     osa.inter = inter_sim;
+    osa.direct = direct_sim;
     optind = 1;
     if ((coher_sim = osim->init(&osa)) == NULL)
     {

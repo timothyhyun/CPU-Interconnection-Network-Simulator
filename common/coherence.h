@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include "interconnect.h"
+#include "directory.h"
 
 #define READ_PERM 0
 #define WRITE_PERM 1
@@ -13,7 +14,7 @@ typedef struct _coher_sim_args {
     int arg_count;
     char** arg_list;
     struct _interconn* inter;
-    struct _directory_sim* direct;
+    struct _direc* direct;
 } coher_sim_args;
 
 typedef struct _coher {

@@ -1,7 +1,6 @@
 #include <directory.h>
+#include "direc_internal.h"
 #include "stree.h"
-
-
 
 typedef struct _directory_req {
     bus_req_type brt;
@@ -23,11 +22,14 @@ directory_req* queuedRequests;
 tree_t** directoryStates = NULL;
 int processorCount = 1;
 interconn* inter_sim = NULL;
-directory_sim* self = NULL;
+direc* self = NULL;
 coher* coherComp;
 
 const int CONTROLLER_DELAY = 5;
 
+
+
+int countDown = 0;
 
 // Sending Functions: 
 
@@ -56,10 +58,10 @@ void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
 
 
 
-void directoryReq(bus_req_type reqType, directory_states currentState, uint64_t addr, int procNum);
+void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum);
 void registerCoher(coher *cc);
 
-directory_sim* init(directory_sim_args* dsa) 
+direc* init(direc_sim_args* dsa) 
 {
     directoryStates = malloc(sizeof(tree_t*) * processorCount);
 
@@ -68,7 +70,7 @@ directory_sim* init(directory_sim_args* dsa)
         directoryStates[i] = tree_new();
     }
     inter_sim = dsa->inter;
-    self = malloc(sizeof(directory_sim));
+    self = malloc(sizeof(direc));
     self->directoryReq = directoryReq;
     self->si.tick = tick;
     self->si.finish = finish;
@@ -88,87 +90,87 @@ void registerCoher(coher* cc)
     coherComp = cc;
 }
 
-directory_states getDirectoryState(uint64_t addr, int procNum) {
-    directory_states lookState = (directory_states) tree_find(directoryStates[procNum], addr);
+directory_states *getDirectoryState(uint64_t addr, int procNum) {
+    directory_states *lookState = (directory_states *) tree_find(directoryStates[procNum], addr);
     if (lookState == NULL){
-        lookState.state = INVALID;
-        lookState.directory = [0,0,0,0];
+        lookState->state = INVALID;
+        lookState->directory[0] = {0,0,0,0};
     }
 
     return lookState;
 }
 
-void setDirectoryState(uint64_t addr, int processorNum, directory_states nextState) 
+void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextState) 
 {
     tree_insert(directoryStates[processorNum], addr, (void*)nextState);
 }
 
 // rprocnum: originating processor 
 // procnum: current processor number
-directory_states directory(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum) {
-    directory_states currentState = getDirectoryState(addr, procNum);
-    switch(currentState.state) {
+directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum) {
+    directory_states *currentState = getDirectoryState(addr, procNum);
+    switch(currentState->state) {
         case EXCLUSIVE:
             if (reqType == BUSRD) {
                 // SEND FETCH
                 for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
                         // send fetch to process 1 (currently at procNum), reply to rprocNum
                         sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
                 // DEMOTE TO SHARED AND ADD PROCESSOR
-                currentState.directory[procNum] = 1;
-                currentState.state = SHARED_STATE;
+                currentState->directory[procNum] = 1;
+                currentState->state = SHARED;
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        currentState.directory[i] = 0;
+                    if (currentState->directory[i] == 1) {
+                        currentState->directory[i] = 0;
                         sendFetch(addr, i, procNum, rprocNum);
                         sendInvalidate(addr, procNum, i);
                         break;
                     }
                 }
-                currentState.directory[procNum] = 1;
+                currentState->directory[procNum] = 1;
             }
             break;
-        case SHARED_STATE:
+        case SHARED:
             if (reqType == BUSRD) {
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
                         sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
-                currentState.directory[procNum] = 1;
+                currentState->directory[procNum] = 1;
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
                         sendFetch(addr, i, procNum, rprocNum);
                         break;
                     }
                 }
                 for (int i = 0; i < 4; i++) {
-                    if (currentState.directory[i] == 1) {
-                        currentState.directory[i] = 0;
+                    if (currentState->directory[i] == 1) {
+                        currentState->directory[i] = 0;
                         sendInvalidate(addr, procNum, i);
                     }
                 }
-                currentState.directory[procNum] = 1;
-                currentState.state = EXCLUSIVE;
+                currentState->directory[procNum] = 1;
+                currentState->state = EXCLUSIVE;
             }
             break;
         case INVALID:
-            currentState.directory[procNum] = 1;
+            currentState->directory[procNum] = 1;
             // add to cache recieving queue - Fetch?
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
                 //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
-                return SHARED_STATE;
+                return SHARED;
             } else {
                 // MAYBE SEND DATA
                 //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);

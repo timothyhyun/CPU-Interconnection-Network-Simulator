@@ -1,11 +1,12 @@
 #ifndef COHER_INTERNAL_H
 #define COHER_INTERNAL_H
 
+#include <directory.h>
 #include <interconnect.h>
 #include <stdio.h>
 
 extern interconn* inter_sim;
-extern directory_sim* direct_sim;
+extern direc* direct_sim;
 
 typedef enum _coherence_states {
   UNDEF = 0,  // As tree find returns NULL, we need an unused for NULL

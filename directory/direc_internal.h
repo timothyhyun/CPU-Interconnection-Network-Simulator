@@ -8,11 +8,6 @@
 
 struct _coher;
 
-typedef struct _directory_sim_args {
-    struct _interconn* inter;
-} directory_sim_args;
-
-
 typedef enum _directory_status {
     INVALID, 
     SHARED, 
@@ -26,11 +21,5 @@ typedef struct _directory_states {
   int directory[4];
 } directory_states;
 
-
-typedef struct _directory_sim{
-    sim_interface si;
-    void (*directoryReq)(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum);
-    void (*registerCoher)(struct _coher* coherComp);
-} directory_sim;
 
 #endif
