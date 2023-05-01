@@ -93,8 +93,7 @@ void registerCoher(coher* cc)
 directory_states *getDirectoryState(uint64_t addr, int procNum) {
     directory_states *lookState = (directory_states *) tree_find(directoryStates[procNum], addr);
     if (lookState == NULL){
-        lookState->state = INVALID;
-        lookState->directory[0] = {0,0,0,0};
+        return NULL;
     }
 
     return lookState;
@@ -170,11 +169,34 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
                 //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
-                return SHARED;
+                
+                // return SHARED;
+
+                // Send reads to other procs
+                for (int i = 0; i < 4; i++) {
+                    if (currentState->directory[i] == 1) {
+                        sendFetch(addr, i, procNum, rprocNum);
+                        break;
+                    }
+                }
+                currentState->directory[procNum] = 1;
+                currentState->state = SHARED;
             } else {
                 // MAYBE SEND DATA
-                //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
-                return EXCLUSIVE;
+                // coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
+
+                // return EXCLUSIVE;
+
+                // Send invalidates to all other copies
+                for (int i = 0; i < 4; i++) {
+                    if (currentState->directory[i] == 1) {
+                        currentState->directory[i] = 0;
+                        sendInvalidate(addr, procNum, i);
+                    }
+                }
+                coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
+                currentState->directory[procNum] = 1;
+                currentState->state = EXCLUSIVE;
             }
             break;
         default:

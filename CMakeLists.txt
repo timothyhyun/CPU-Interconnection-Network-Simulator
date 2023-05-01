@@ -16,6 +16,7 @@ add_subdirectory(coherence)
 add_subdirectory(interconnect)
 add_subdirectory(simpleCache)
 
+add_subdirectory(directory)
 add_subdirectory(cache_impl_final)
 add_subdirectory(processor_impl_final)
 add_subdirectory(coherence_impl_final)
