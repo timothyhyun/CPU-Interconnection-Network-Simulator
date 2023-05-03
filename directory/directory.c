@@ -17,7 +17,7 @@ typedef struct _directory_req {
 
 
 directory_req* pendingRequest = NULL;
-// Just one Queue Needed 
+// Just one Queue Needed
 directory_req* queuedRequests;
 tree_t** directoryStates = NULL;
 int processorCount = 1;
@@ -31,7 +31,7 @@ const int CONTROLLER_DELAY = 5;
 
 int countDown = 0;
 
-// Sending Functions: 
+// Sending Functions:
 
 // send from directory to cache
 // directoryNum sending fetch request to procNum which will send data back to rprocNum
@@ -48,11 +48,11 @@ void sendFetch(uint64_t addr, int procNum, int rprocNum, int directoryNum) {
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
     if (procNum == directoryNum) {
-        coherComp->cacheReq(INVALIDATE, addr, procNum, -1);
+        coherComp->cacheReq(IC_INVALIDATE, addr, procNum, -1);
     } else {
         // Interconnect request
-        // No reply needed 
-        inter_sim->busReq(INVALIDATE, addr, procNum, directoryNum, -1);
+        // No reply needed
+        inter_sim->busReq(IC_INVALIDATE, addr, procNum, directoryNum, -1);
     }
 }
 
@@ -61,7 +61,7 @@ void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
 void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum);
 void registerCoher(coher *cc);
 
-direc* init(direc_sim_args* dsa) 
+direc* init(direc_sim_args* dsa)
 {
     directoryStates = malloc(sizeof(tree_t*) * processorCount);
 
@@ -82,7 +82,7 @@ direc* init(direc_sim_args* dsa)
 
 
     return self;
-} 
+}
 
 
 void registerCoher(coher* cc)
@@ -99,17 +99,17 @@ directory_states *getDirectoryState(uint64_t addr, int procNum) {
     return lookState;
 }
 
-void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextState) 
+void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextState)
 {
     tree_insert(directoryStates[processorNum], addr, (void*)nextState);
 }
 
-// rprocnum: originating processor 
+// rprocnum: originating processor
 // procnum: current processor number
 directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum) {
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
-        case EXCLUSIVE:
+        case D_EXCLUSIVE:
             if (reqType == BUSRD) {
                 // SEND FETCH
                 for (int i = 0; i < 4; i++) {
@@ -121,7 +121,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 }
                 // DEMOTE TO SHARED AND ADD PROCESSOR
                 currentState->directory[procNum] = 1;
-                currentState->state = SHARED;
+                currentState->state = D_SHARED;
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
@@ -135,7 +135,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 currentState->directory[procNum] = 1;
             }
             break;
-        case SHARED:
+        case D_SHARED:
             if (reqType == BUSRD) {
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
@@ -160,16 +160,16 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                     }
                 }
                 currentState->directory[procNum] = 1;
-                currentState->state = EXCLUSIVE;
+                currentState->state = D_EXCLUSIVE;
             }
             break;
-        case INVALID:
+        case D_INVALID:
             currentState->directory[procNum] = 1;
             // add to cache recieving queue - Fetch?
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
                 //coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
-                
+
                 // return SHARED;
 
                 // Send reads to other procs
@@ -180,7 +180,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                     }
                 }
                 currentState->directory[procNum] = 1;
-                currentState->state = SHARED;
+                currentState->state = D_SHARED;
             } else {
                 // MAYBE SEND DATA
                 // coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
@@ -196,7 +196,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 }
                 coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
                 currentState->directory[procNum] = 1;
-                currentState->state = EXCLUSIVE;
+                currentState->state = D_EXCLUSIVE;
             }
             break;
         default:
@@ -234,7 +234,7 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
 
 }
 
-int tick() 
+int tick()
 {
     // Start Processing Queue and calls directory()
     if (countDown > 0)
@@ -264,6 +264,6 @@ int finish(int outFd)
 int destroy(void)
 {
     // TODO
-    
+
     return 0;
 }

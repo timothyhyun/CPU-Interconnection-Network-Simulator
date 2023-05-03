@@ -1,1 +1,1 @@
-/usr/bin/gcc -O2 -g -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk -mmacosx-version-min=10.15 -dynamiclib -Wl,-headerpad_max_install_names -o libtrace.dylib -install_name /Users/tony/Documents/GitHub/cadss-f22-group3/trace/libtrace.dylib CMakeFiles/trace.dir/trace.c.o 
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libtrace.so -o libtrace.so CMakeFiles/trace.dir/trace.c.o 

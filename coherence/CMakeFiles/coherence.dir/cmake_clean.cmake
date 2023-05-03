@@ -5,8 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/coherence.dir/protocol.c.o.d"
   "CMakeFiles/coherence.dir/stree.c.o"
   "CMakeFiles/coherence.dir/stree.c.o.d"
-  "libcoherence.dylib"
   "libcoherence.pdb"
+  "libcoherence.so"
 )
 
 # Per-language clean rules from dependency scanning.

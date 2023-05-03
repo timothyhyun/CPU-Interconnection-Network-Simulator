@@ -9,9 +9,9 @@
 struct _coher;
 
 typedef enum _directory_status {
-    INVALID, 
-    SHARED, 
-    EXCLUSIVE
+    D_INVALID,
+    D_SHARED,
+    D_EXCLUSIVE
 } directory_status;
 
 

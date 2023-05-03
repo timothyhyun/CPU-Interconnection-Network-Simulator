@@ -10,7 +10,7 @@ typedef struct _cache_req {
     bus_req_type brt;
     uint64_t addr;
     int procNum;
-    int nextProcNum; 
+    int nextProcNum;
     struct _cache_req *next;
 } cache_req;
 
@@ -27,7 +27,7 @@ int CADSS_VERBOSE = 0;
 
 coher* self = NULL;
 interconn* inter_sim = NULL;
-directory_sim* direct_sim = NULL;
+direc* direct_sim = NULL;
 
 typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
@@ -35,7 +35,7 @@ cacheCallbackFunc cacheCallback = NULL;
 uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum);
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 
-// processorNum: current processor num 
+// processorNum: current processor num
 // nextProcessorNum: # to reply to
 void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum);
 void registerCacheInterface(void(*callback)(int, int, int64_t));
@@ -43,21 +43,21 @@ void registerCacheInterface(void(*callback)(int, int, int64_t));
 coher* init(coher_sim_args* csa)
 {
     int op;
-    
-    
+
+
     if (processorCount < 1 || processorCount > 256)
     {
         fprintf(stderr, "Error: processorCount outside valid range - %d specified\n", processorCount);
         return NULL;
     }
-    
+
     coherStates = malloc(sizeof(tree_t*) * processorCount);
-    
+
     for (int i = 0; i < processorCount; i++)
     {
         coherStates[i] = tree_new();
     }
-    
+
     inter_sim = csa->inter;
     direct_sim = csa->direct;
     self = malloc(sizeof(coher));
@@ -67,16 +67,18 @@ coher* init(coher_sim_args* csa)
     self->permReq = permReq;
     self->busReq = busReq;
     self->registerCacheInterface = registerCacheInterface;
-    
+
     inter_sim->registerCoher(self);
     direct_sim->registerCoher(self);
 
     queuedRequests = malloc(sizeof(cache_req));
     queuedRequests = NULL;
 
-    
+
     return self;
 }
+
+int countDown = 0;
 
 void registerCacheInterface(void(*callback)(int, int, int64_t))
 {
@@ -89,7 +91,7 @@ coherence_states getState(uint64_t addr, int processorNum)
 {
     coherence_states lookState = (coherence_states) tree_find(coherStates[processorNum], addr);
     if (lookState == UNDEF) return INVALID;
-    
+
     return lookState;
 }
 
@@ -106,7 +108,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
     {
         // ERROR
     }
-    
+
     coherence_states currentState = getState(addr, processorNum);
     coherence_states nextState;
     cache_action ca;
@@ -126,7 +128,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
         case NONE:
             break;
     }
-    
+
     // IF the destination state is invalid, that is an implicit state
     //   and does not need to be stored in the tree.
     if (nextState == INVALID)
@@ -140,7 +142,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
     {
         setState(addr, processorNum, nextState);
     }
-    
+
     return 0;
 }
 
@@ -154,13 +156,13 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     {
         // ERROR
     }
-    
+
     coherence_states currentState = getState(addr, processorNum);
     coherence_states nextState;
     uint8_t permAvail = 0;
     nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
     setState(addr, processorNum, nextState);
-    
+
     return permAvail;
 }
 
@@ -168,14 +170,14 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 // Takes request from interconnect and directory and places them in queue
 // all go to processCache
 // rproc: processorNum that sent request
-void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum) 
+void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum)
 {
     // Add to pending Queue
     if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));
         nextReq->brt = reqType;
         nextReq->addr = addr;
-        nextReq->processorNum;
+        nextReq->procNum = processorNum;
         nextReq->nextProcNum = nextProcessorNum;
         pendingRequest = nextReq;
         countDown = CONTROLLER_DELAY;
@@ -183,7 +185,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
         cache_req* nextReq = calloc(1, sizeof(cache_req));
         nextReq->brt = reqType;
         nextReq->addr = addr;
-        nextReq->processorNum;
+        nextReq->procNum = processorNum;
         nextReq->nextProcNum = nextProcessorNum;
         queuedRequests = nextReq;
     }
@@ -194,7 +196,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
 
 
 // Departures are simple because they all go through the interconnect queue.
-// No need to change anything. 
+// No need to change anything.
 int tick()
 {
     // Start processing Queue
@@ -221,7 +223,7 @@ int tick()
 
     direct_sim->si.tick();
     return inter_sim->si.tick();
-    
+
 
 }
 

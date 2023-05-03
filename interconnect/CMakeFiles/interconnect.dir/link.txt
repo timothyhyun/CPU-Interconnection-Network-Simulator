@@ -1,1 +1,1 @@
-/usr/bin/gcc -O2 -g -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk -mmacosx-version-min=10.15 -dynamiclib -Wl,-headerpad_max_install_names -o libinterconnect.dylib -install_name /Users/tony/Documents/GitHub/cadss-f22-group3/interconnect/libinterconnect.dylib CMakeFiles/interconnect.dir/interconnect.c.o 
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libinterconnect.so -o libinterconnect.so CMakeFiles/interconnect.dir/interconnect.c.o 

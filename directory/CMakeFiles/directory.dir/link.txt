@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libdirectory.so -o libdirectory.so CMakeFiles/directory.dir/directory.c.o CMakeFiles/directory.dir/stree.c.o 

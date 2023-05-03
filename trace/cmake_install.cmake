@@ -1,4 +1,4 @@
-# Install script for directory: /Users/tony/Documents/GitHub/cadss-f22-group3/trace
+# Install script for directory: /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/trace
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -27,6 +27,11 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   endif()
 endif()
 
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
 # Is this installation the result of a crosscompile?
 if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
@@ -39,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/trace/taskLib/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/trace/taskLib/cmake_install.cmake")
 
 endif()
 

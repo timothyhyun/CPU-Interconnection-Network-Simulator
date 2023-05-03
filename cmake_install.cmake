@@ -1,4 +1,4 @@
-# Install script for directory: /Users/tony/Documents/GitHub/cadss-f22-group3
+# Install script for directory: /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -27,6 +27,11 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   endif()
 endif()
 
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
 # Is this installation the result of a crosscompile?
 if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
@@ -39,14 +44,19 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/branch/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/cache/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/engine/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/trace/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/processor/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/coherence/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/interconnect/cmake_install.cmake")
-  include("/Users/tony/Documents/GitHub/cadss-f22-group3/simpleCache/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/branch/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/branch_impl/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/engine/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/trace/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/processor/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/processor_impl/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/coherence/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/interconnect/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/simpleCache/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/directory/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/d_coherence/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl_final/cmake_install.cmake")
 
 endif()
 
@@ -58,5 +68,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/tony/Documents/GitHub/cadss-f22-group3/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

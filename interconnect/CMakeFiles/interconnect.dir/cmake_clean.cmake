@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/interconnect.dir/interconnect.c.o"
   "CMakeFiles/interconnect.dir/interconnect.c.o.d"
-  "libinterconnect.dylib"
   "libinterconnect.pdb"
+  "libinterconnect.so"
 )
 
 # Per-language clean rules from dependency scanning.

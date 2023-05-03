@@ -1,1 +1,1 @@
-/usr/bin/gcc -O2 -g -DNDEBUG -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk -mmacosx-version-min=10.15 -Wl,-search_paths_first -Wl,-headerpad_max_install_names "CMakeFiles/cadss-engine.dir/engine.c.o" "CMakeFiles/cadss-engine.dir/config.c.o" -o ../cadss-engine  -ldl 
+/usr/bin/gcc -O2 -g -DNDEBUG -rdynamic CMakeFiles/cadss-engine.dir/engine.c.o CMakeFiles/cadss-engine.dir/config.c.o -o ../cadss-engine  -ldl 
