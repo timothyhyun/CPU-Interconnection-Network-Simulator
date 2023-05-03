@@ -66,6 +66,7 @@ coher* init(coher_sim_args* csa)
     self->si.destroy = destroy;
     self->permReq = permReq;
     self->busReq = busReq;
+    self->cacheReq = cacheReq;
     self->registerCacheInterface = registerCacheInterface;
 
     inter_sim->registerCoher(self);

@@ -1,0 +1,1 @@
+/usr/bin/gcc -fPIC -O2 -g -DNDEBUG -shared -Wl,-soname,libbranch_impl.so -o libbranch_impl.so CMakeFiles/branch_impl.dir/branch_internal.c.o CMakeFiles/branch_impl.dir/branch.c.o 
