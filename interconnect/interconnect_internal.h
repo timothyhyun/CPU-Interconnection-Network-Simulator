@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <interconnect.h>
 
 typedef enum {
   NONE = 0
@@ -19,12 +20,12 @@ typedef enum {
 typedef struct packet {
   int src;
   int dest;
-  int size; // useless and we ignore this
+  int size; // useless and we ignore this for simplicity
 } packet_t;
 
 // What will we use this for?
 typedef struct i_req {
-    i_req_t irt;
+    bus_req_type irt;
     i_req_status currentState;
     uint64_t addr;
     int procNum;
