@@ -1,13 +1,37 @@
 #include "interconnect_internal.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 // Nice little hack to stage computation, I think
 int l_dim = 0;
 
+/**
+ * From Stack Overflow: 
+ * https://stackoverflow.com/questions/2509679/how-to-generate-a-random-integer-number-from-within-a-range
+ * 
+ * So our RNG isn't.. horrific?
+ * 
+ * Again, we use random() as per cppreference's note on how bad rand() is
+ */
+uint64_t rand_max_n (uint64_t n) {
+    srandom(time(NULL));
+    uint64_t buckets = n;
+    uint64_t range = (uint64_t) RAND_MAX + 1;
+    uint64_t bucket_size = range / buckets;
+    uint64_t round = range % buckets;
+
+    int64_t r;
+    do {
+        r = random();
+    } while (range - round <= (uint64_t)r);
+    return r / bucket_size;
+}
 
 /**
  * Generates a new interconnection network
@@ -22,6 +46,8 @@ int l_dim = 0;
  * randomized routing is more than sufficient.
  */
 ic_network_t *new_network(int numProc, network_type type) {
+    // We form the grid with some math.h magic:
+    l_dim = (int) floor(sqrt(4.0));
     ic_network_t *res = malloc(sizeof(ic_network_t));
     res->type = type;
     res->nodes = malloc(sizeof(ic_node_t) * numProc); // We need to handle this differently in the custom case
@@ -45,6 +71,7 @@ ic_network_t *new_network(int numProc, network_type type) {
             }
             break;
         case RING:
+            // For Rings, we actually aim to simulate a double ring
             for (int i = 0; i < numProc; i++) {
                 res->nodes[i].busy = false;
                 res->nodes[i].curr_packet = NULL;
@@ -70,8 +97,27 @@ ic_network_t *new_network(int numProc, network_type type) {
     return res;
 }
 
-void route(int start, int dest) {
-
+int route(int start, int dest, ic_network_t *graph) {
+    if (start == dest) {
+        return dest;
+    }
+    switch(graph->type) {
+        case RING:
+            int n1 = graph->nodes[start].connected[0];
+            int n2 = graph->nodes[start].connected[1];
+            if (!graph->nodes[n1].busy) {
+                return n1;
+            } else if (!graph->nodes[n2].busy) {
+                return n2;
+            } else {
+              return start;
+            }
+            break;
+        case CROSSBAR:
+            break;
+        default:
+            return -1;
+    }
 }
 
 void update(ic_network_t *graph) {
@@ -85,13 +131,34 @@ void update(ic_network_t *graph) {
     }
     int *candc = calloc(sizeof(int), numNodes);
     for (int i = 0; i < numNodes; i++) {
-        // implement XY routing logic here, but here is the catch
-        int next_node; // TODO: = some logic here
+        ic_req *packet = graph->nodes[i].curr_packet;
+        if (packet == NULL) {
+          continue;
+        }
+        int next_node = route(i, packet->procNum, graph);
 
         // Keep track of the fact that i tried to touch next_node
         if (!graph->nodes[next_node].busy) {
             int idx = candc[next_node]++;
             candidates[next_node][idx] = i;
         }
+    }
+    
+    /**
+     * This part of the simulation is particularly crude and technically
+     * not 100% faithful to how things really work, but oh well.
+     * In particular, this is because we abstracted links when we really
+     * should model them literally
+     * 
+     * Also fails to capture the idea of simultaneous update.
+     */
+    for (int i = 0; i < numNodes; i++) {
+        int m = candc[i];
+        int winner = (int)rand_max_n((uint64_t) m);
+        assert(!graph->nodes[i].busy);
+        graph->nodes[i].curr_packet = graph->nodes[winner].curr_packet;
+        graph->nodes[i].busy = true;
+        graph->nodes[winner].curr_packet = NULL;
+        graph->nodes[winner].busy = false;
     }
 }

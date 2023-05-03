@@ -52,11 +52,9 @@ typedef struct ic_node {
 /**
  * Currently size and endpoints fields are not distinct in purpose
  * 
- * In our interconnection network, we abstract away the concept of a link
- * Instead, nodes that wish to send to another node all "register" to send
- * We then perform arbitration by randomly selecting a node to progress, to
- * simulate the actual handling of race conditions. Nodes that fail to send
- * will simply hold their packets in their per-node mailbox.
+ * In our interconnection network, we keep links abstract and directly transmit
+ * to the next node. In the case of contention, our implementation randomly
+ * selects one to proceed and one to stall, with no guarantee of fairness.
  */
 typedef struct ic_network {
   network_type type;
@@ -64,5 +62,8 @@ typedef struct ic_network {
   int endpoints; // only counts endpoints
   int size; // size of nodes
 } ic_network_t;
+
+ic_network_t *new_network(int numProc, network_type type);
+void update(ic_network_t *graph);
 
 #endif
