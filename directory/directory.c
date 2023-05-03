@@ -70,6 +70,7 @@ direc* init(direc_sim_args* dsa)
         directoryStates[i] = tree_new();
     }
     inter_sim = dsa->inter;
+    coherComp = dsa->coher;
     self = malloc(sizeof(direc));
     self->directoryReq = directoryReq;
     self->si.tick = tick;
@@ -93,7 +94,13 @@ void registerCoher(coher* cc)
 directory_states *getDirectoryState(uint64_t addr, int procNum) {
     directory_states *lookState = (directory_states *) tree_find(directoryStates[procNum], addr);
     if (lookState == NULL){
-        return NULL;
+        // In practice we should have an init function for this
+        lookState = malloc(sizeof(directory_states));
+        lookState->state = D_INVALID;
+        for (int i = 0; i < 4; i++) {
+          lookState->directory[i] = 0;
+        }
+        tree_insert(directoryStates[procNum], addr, (void *)lookState);
     }
 
     return lookState;

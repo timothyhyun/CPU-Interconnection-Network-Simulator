@@ -7,6 +7,7 @@ typedef struct _direc_sim_args {
     int arg_count;
     char** arg_list;
     struct _interconn* inter;
+    struct _coher* coher;
 } direc_sim_args;
 
 typedef struct _direc{
