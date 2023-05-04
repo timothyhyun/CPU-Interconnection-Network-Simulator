@@ -33,10 +33,13 @@ interconn* init(inter_sim_args* isa)
 {
     int op;
     
-    while ((op = getopt(isa->arg_count, isa->arg_list, "v")) != -1)
+    while ((op = getopt(isa->arg_count, isa->arg_list, "t:v")) != -1)
     {
         switch (op)
         {
+            case 't':
+                nt = atoi(optarg);
+                break;
             default:
                 break;
         }
