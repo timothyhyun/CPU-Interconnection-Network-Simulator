@@ -34,6 +34,24 @@ uint64_t rand_max_n (uint64_t n) {
 }
 
 /**
+ * Functions to support gridding of the processors
+ */
+inline int index_to_x(int index) {
+    assert(l_dim != 0);
+    return index % l_dim;
+}
+
+inline int index_to_y(int index) {
+    assert(l_dim != 0);
+    return index / l_dim;
+}
+
+inline int xy_to_index(int x, int y) {
+    assert(l_dim != 0);
+    return x + y * l_dim;
+}
+
+/**
  * Generates a new interconnection network
  * 
  * We will set up the network to properly use the so-called 'XY' routing 
@@ -55,18 +73,28 @@ ic_network_t *new_network(int numProc, network_type type) {
     res->size = numProc;
     switch (type) {
         case CROSSBAR:
+            /**
+             * In our case, we technically abstract away the concept of crossbar
+             * switching and just assume that every processor is connected to
+             * every other processor for simplicity
+             */
             for (int i = 0; i < numProc; i++) {
+                // TODO: double check all of this for type errors
                 res->nodes[i].busy = false;
                 res->nodes[i].curr_packet = NULL;
                 res->nodes[i].id = i;
                 res->nodes[i].num_neighbors = numProc - 1;
-                res->nodes[i].connected = malloc(sizeof(int) * numProc - 1);
+                res->nodes[i].links = malloc(sizeof(ic_link_t *) * numProc - 1);
                 for (int j = 0; j < numProc - 1; j++) {
+                    ic_link_t *link = calloc(sizeof(ic_link_t), 1);
+                    link->start = i;
                     if (j >= i) {
-                        res->nodes[i].connected[j] = j + 1;
+                        assert(j + 1 < numProc);
+                        link->dest = j + 1;
                     } else {
-                        res->nodes[i].connected[j] = j;
+                        link->dest = j;
                     }
+                    res->nodes[i].links[j] = link;
                 }
             }
             break;
@@ -77,9 +105,15 @@ ic_network_t *new_network(int numProc, network_type type) {
                 res->nodes[i].curr_packet = NULL;
                 res->nodes[i].id = i;
                 res->nodes[i].num_neighbors = 2;
-                res->nodes[i].connected = malloc(sizeof(int) * 2);
-                res->nodes[i].connected = (i + 1) % numProc;
-                res->nodes[i].connected = (i - 1) < 0 ? (i - 1) + numProc : (i - 1);
+                res->nodes[i].links = malloc(sizeof(ic_link_t *) * 2);
+                ic_link_t *link0 = calloc(sizeof(ic_link_t), 1);
+                ic_link_t *link1 = calloc(sizeof(ic_link_t), 1);
+                link0->start = i;
+                link0->dest = (i + 1) % numProc;
+                link1->start = i;
+                link1->dest = (i - 1) < 0 ? (i - 1) + numProc : (i - 1);
+                res->nodes[i].links[0] = link0;
+                res->nodes[i].links[1] = link1;
             }
             break;
         case MESH:
@@ -103,11 +137,11 @@ int route(int start, int dest, ic_network_t *graph) {
     }
     switch(graph->type) {
         case RING:
-            int n1 = graph->nodes[start].connected[0];
-            int n2 = graph->nodes[start].connected[1];
-            if (!graph->nodes[n1].busy) {
+            ic_link_t *n1 = graph->nodes[start].links[0];
+            ic_link_t *n2 = graph->nodes[start].links[1];
+            if (n1 && !n1->busy) {
                 return n1;
-            } else if (!graph->nodes[n2].busy) {
+            } else if (n2 && !n2->busy) {
                 return n2;
             } else {
               return start;
@@ -123,42 +157,5 @@ int route(int start, int dest, ic_network_t *graph) {
 void update(ic_network_t *graph) {
     int numNodes = graph->size;
 
-    // Candidate arrays keep track of everyone that tries to do an action to i
-    // We randomly select one actor to "win" and everyone else fails.
-    int **candidates = malloc(sizeof(int *) * numNodes);
-    for (int i = 0; i < numNodes; i++) {
-      candidates[i] = calloc(sizeof(int), numNodes);
-    }
-    int *candc = calloc(sizeof(int), numNodes);
-    for (int i = 0; i < numNodes; i++) {
-        ic_req *packet = graph->nodes[i].curr_packet;
-        if (packet == NULL) {
-          continue;
-        }
-        int next_node = route(i, packet->procNum, graph);
-
-        // Keep track of the fact that i tried to touch next_node
-        if (!graph->nodes[next_node].busy) {
-            int idx = candc[next_node]++;
-            candidates[next_node][idx] = i;
-        }
-    }
     
-    /**
-     * This part of the simulation is particularly crude and technically
-     * not 100% faithful to how things really work, but oh well.
-     * In particular, this is because we abstracted links when we really
-     * should model them literally
-     * 
-     * Also fails to capture the idea of simultaneous update.
-     */
-    for (int i = 0; i < numNodes; i++) {
-        int m = candc[i];
-        int winner = (int)rand_max_n((uint64_t) m);
-        assert(!graph->nodes[i].busy);
-        graph->nodes[i].curr_packet = graph->nodes[winner].curr_packet;
-        graph->nodes[i].busy = true;
-        graph->nodes[winner].curr_packet = NULL;
-        graph->nodes[winner].busy = false;
-    }
 }

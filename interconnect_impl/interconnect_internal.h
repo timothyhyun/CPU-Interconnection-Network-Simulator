@@ -41,26 +41,35 @@ typedef struct _ic_req {
     struct _ic_req *next;
 } ic_req;
 
+/**
+ * Simulates a one-directional link from a -> b
+ * So for a <-> b we have two one-directional links for simplicity
+ * Implies that all of our links are multiplexed too, which is cool.
+ */
+typedef struct ic_link {
+    int start;
+    int dest;
+    ic_req *curr_packet;
+    bool busy; // This exists purely as a safety check
+} ic_link_t;
+
 typedef struct ic_node {
     int id; // > 1 and < ic_network->order if it's an endpoint, else > order
     ic_req *curr_packet; 
-    int *connected;
+    ic_link_t **links;
     int num_neighbors;
     bool busy;
 } ic_node_t;
 
 /**
  * Currently size and endpoints fields are not distinct in purpose
- * 
- * In our interconnection network, we keep links abstract and directly transmit
- * to the next node. In the case of contention, our implementation randomly
- * selects one to proceed and one to stall, with no guarantee of fairness.
  */
 typedef struct ic_network {
   network_type type;
   ic_node_t *nodes; 
   int endpoints; // only counts endpoints
   int size; // size of nodes
+  // ic_link_t ***in_links; // record all links into nodes
 } ic_network_t;
 
 ic_network_t *new_network(int numProc, network_type type);

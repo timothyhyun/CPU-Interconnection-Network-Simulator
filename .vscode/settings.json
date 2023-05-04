@@ -13,6 +13,7 @@
     "*.tcc": "c",
     "set": "c",
     "string": "c",
-    "vector": "c"
+    "vector": "c",
+    "interconnect_internal.h": "c"
   }
 }
