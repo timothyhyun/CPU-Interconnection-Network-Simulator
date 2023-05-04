@@ -76,6 +76,7 @@ all: simpleCache/all
 all: directory/all
 all: d_coherence/all
 all: cache_impl_final/all
+all: interconnect_impl/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -92,6 +93,7 @@ preinstall: simpleCache/preinstall
 preinstall: directory/preinstall
 preinstall: d_coherence/preinstall
 preinstall: cache_impl_final/preinstall
+preinstall: interconnect_impl/preinstall
 .PHONY : preinstall
 
 # The main recursive "clean" target.
@@ -108,6 +110,7 @@ clean: simpleCache/clean
 clean: directory/clean
 clean: d_coherence/clean
 clean: cache_impl_final/clean
+clean: interconnect_impl/clean
 .PHONY : clean
 
 #=============================================================================
@@ -244,6 +247,21 @@ interconnect/preinstall:
 # Recursive "clean" directory target.
 interconnect/clean: interconnect/CMakeFiles/interconnect.dir/clean
 .PHONY : interconnect/clean
+
+#=============================================================================
+# Directory level rules for directory interconnect_impl
+
+# Recursive "all" directory target.
+interconnect_impl/all: interconnect_impl/CMakeFiles/interconnect_impl.dir/all
+.PHONY : interconnect_impl/all
+
+# Recursive "preinstall" directory target.
+interconnect_impl/preinstall:
+.PHONY : interconnect_impl/preinstall
+
+# Recursive "clean" directory target.
+interconnect_impl/clean: interconnect_impl/CMakeFiles/interconnect_impl.dir/clean
+.PHONY : interconnect_impl/clean
 
 #=============================================================================
 # Directory level rules for directory processor
@@ -433,7 +451,7 @@ engine/CMakeFiles/cadss-engine.dir/clean:
 trace/CMakeFiles/trace.dir/all:
 	$(MAKE) $(MAKESILENT) -f trace/CMakeFiles/trace.dir/build.make trace/CMakeFiles/trace.dir/depend
 	$(MAKE) $(MAKESILENT) -f trace/CMakeFiles/trace.dir/build.make trace/CMakeFiles/trace.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=44,45 "Built target trace"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=48,49 "Built target trace"
 .PHONY : trace/CMakeFiles/trace.dir/all
 
 # Build rule for subdir invocation for target.
@@ -459,7 +477,7 @@ trace/CMakeFiles/trace.dir/clean:
 trace/taskLib/CMakeFiles/taskLib.dir/all:
 	$(MAKE) $(MAKESILENT) -f trace/taskLib/CMakeFiles/taskLib.dir/build.make trace/taskLib/CMakeFiles/taskLib.dir/depend
 	$(MAKE) $(MAKESILENT) -f trace/taskLib/CMakeFiles/taskLib.dir/build.make trace/taskLib/CMakeFiles/taskLib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=36,37,38,39,40,41,42,43 "Built target taskLib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=40,41,42,43,44,45,46,47 "Built target taskLib"
 .PHONY : trace/taskLib/CMakeFiles/taskLib.dir/all
 
 # Build rule for subdir invocation for target.
@@ -485,7 +503,7 @@ trace/taskLib/CMakeFiles/taskLib.dir/clean:
 processor/CMakeFiles/processor.dir/all:
 	$(MAKE) $(MAKESILENT) -f processor/CMakeFiles/processor.dir/build.make processor/CMakeFiles/processor.dir/depend
 	$(MAKE) $(MAKESILENT) -f processor/CMakeFiles/processor.dir/build.make processor/CMakeFiles/processor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=28,29 "Built target processor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=32,33 "Built target processor"
 .PHONY : processor/CMakeFiles/processor.dir/all
 
 # Build rule for subdir invocation for target.
@@ -511,7 +529,7 @@ processor/CMakeFiles/processor.dir/clean:
 processor_impl/CMakeFiles/processor_impl.dir/all:
 	$(MAKE) $(MAKESILENT) -f processor_impl/CMakeFiles/processor_impl.dir/build.make processor_impl/CMakeFiles/processor_impl.dir/depend
 	$(MAKE) $(MAKESILENT) -f processor_impl/CMakeFiles/processor_impl.dir/build.make processor_impl/CMakeFiles/processor_impl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=30,31,32 "Built target processor_impl"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=34,35,36 "Built target processor_impl"
 .PHONY : processor_impl/CMakeFiles/processor_impl.dir/all
 
 # Build rule for subdir invocation for target.
@@ -589,7 +607,7 @@ interconnect/CMakeFiles/interconnect.dir/clean:
 simpleCache/CMakeFiles/simpleCache.dir/all:
 	$(MAKE) $(MAKESILENT) -f simpleCache/CMakeFiles/simpleCache.dir/build.make simpleCache/CMakeFiles/simpleCache.dir/depend
 	$(MAKE) $(MAKESILENT) -f simpleCache/CMakeFiles/simpleCache.dir/build.make simpleCache/CMakeFiles/simpleCache.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=33,34,35 "Built target simpleCache"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=37,38,39 "Built target simpleCache"
 .PHONY : simpleCache/CMakeFiles/simpleCache.dir/all
 
 # Build rule for subdir invocation for target.
@@ -685,6 +703,32 @@ cache_impl_final: cache_impl_final/CMakeFiles/cache_impl_final.dir/rule
 cache_impl_final/CMakeFiles/cache_impl_final.dir/clean:
 	$(MAKE) $(MAKESILENT) -f cache_impl_final/CMakeFiles/cache_impl_final.dir/build.make cache_impl_final/CMakeFiles/cache_impl_final.dir/clean
 .PHONY : cache_impl_final/CMakeFiles/cache_impl_final.dir/clean
+
+#=============================================================================
+# Target rules for target interconnect_impl/CMakeFiles/interconnect_impl.dir
+
+# All Build rule for target.
+interconnect_impl/CMakeFiles/interconnect_impl.dir/all:
+	$(MAKE) $(MAKESILENT) -f interconnect_impl/CMakeFiles/interconnect_impl.dir/build.make interconnect_impl/CMakeFiles/interconnect_impl.dir/depend
+	$(MAKE) $(MAKESILENT) -f interconnect_impl/CMakeFiles/interconnect_impl.dir/build.make interconnect_impl/CMakeFiles/interconnect_impl.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles --progress-num=28,29,30,31 "Built target interconnect_impl"
+.PHONY : interconnect_impl/CMakeFiles/interconnect_impl.dir/all
+
+# Build rule for subdir invocation for target.
+interconnect_impl/CMakeFiles/interconnect_impl.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 interconnect_impl/CMakeFiles/interconnect_impl.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/CMakeFiles 0
+.PHONY : interconnect_impl/CMakeFiles/interconnect_impl.dir/rule
+
+# Convenience name for target.
+interconnect_impl: interconnect_impl/CMakeFiles/interconnect_impl.dir/rule
+.PHONY : interconnect_impl
+
+# clean rule for target.
+interconnect_impl/CMakeFiles/interconnect_impl.dir/clean:
+	$(MAKE) $(MAKESILENT) -f interconnect_impl/CMakeFiles/interconnect_impl.dir/build.make interconnect_impl/CMakeFiles/interconnect_impl.dir/clean
+.PHONY : interconnect_impl/CMakeFiles/interconnect_impl.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

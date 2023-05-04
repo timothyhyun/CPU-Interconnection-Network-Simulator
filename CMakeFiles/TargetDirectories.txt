@@ -42,3 +42,6 @@
 /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl_final/CMakeFiles/cache_impl_final.dir
 /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl_final/CMakeFiles/edit_cache.dir
 /afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl_final/CMakeFiles/rebuild_cache.dir
+/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/interconnect_impl/CMakeFiles/interconnect_impl.dir
+/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/interconnect_impl/CMakeFiles/edit_cache.dir
+/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/interconnect_impl/CMakeFiles/rebuild_cache.dir

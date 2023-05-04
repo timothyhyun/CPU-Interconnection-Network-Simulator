@@ -57,6 +57,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/directory/cmake_install.cmake")
   include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/d_coherence/cmake_install.cmake")
   include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/cache_impl_final/cmake_install.cmake")
+  include("/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/interconnect_impl/cmake_install.cmake")
 
 endif()
 
