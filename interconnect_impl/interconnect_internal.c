@@ -170,7 +170,32 @@ ic_network_t *new_network(int numProc, network_type type) {
             }
             break;
         case TORUS:
-            // you too, we won't test this for now???
+            for (int i = 0; i < numProc; i++) {
+                res->nodes[i].busy = false;
+                res->nodes[i].curr_packet = NULL;
+                res->nodes[i].id = i;
+                res->nodes[i].num_neighbors = 4;
+                res->nodes[i].links = malloc(sizeof(ic_link_t *) * 4);
+                ic_link_t *link0 = calloc(sizeof(ic_link_t), 1);
+                ic_link_t *link1 = calloc(sizeof(ic_link_t), 1);
+                ic_link_t *link2 = calloc(sizeof(ic_link_t), 1);
+                ic_link_t *link3 = calloc(sizeof(ic_link_t), 1);
+                int x = index_to_x(i);
+                int y = index_to_y(i);
+                link0->start = i;
+                link1->start = i;
+                link2->start = i;
+                link3->start = i;
+                link0->dest = xy_to_index((x + 1) % l_dim, y);
+                link1->dest = xy_to_index(x, (y + 1) % (numProc / l_dim));
+                link2->dest = xy_to_index((x - 1) < 0 ? l_dim - 1 : (x - 1), y);
+                link3->dest = xy_to_index(x, (y - 1) < 0 ? (numProc / l_dim) - 1 : (y - 1));
+                // link[0] goes left, 1 down, 2 right, 3 up
+                res->nodes[i].links[0] = link0;
+                res->nodes[i].links[1] = link1;
+                res->nodes[i].links[2] = link2;
+                res->nodes[i].links[3] = link3;
+            }
             break;
         case CUSTOM:
         // We construct the graph from a file in this case
