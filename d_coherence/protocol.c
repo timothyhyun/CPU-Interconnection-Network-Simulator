@@ -132,7 +132,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
                 sendDataBack(addr, procNum, rprocNum);
                 return SHARED_STATE;
             }
-            else if (reqType = INVALIDATE) {
+            else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
                 return INVALID;
             }
@@ -143,7 +143,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
                 sendDataBack(addr, procNum, rprocNum);
                 return SHARED_STATE;
             }
-            else if (reqType = INVALIDATE) {
+            else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
                 return INVALID;
             }

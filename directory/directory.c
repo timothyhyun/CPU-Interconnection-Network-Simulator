@@ -210,10 +210,10 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
         nextReq->procNum = procNum;
         nextReq->rprocNum = rprocNum;
         pendingRequest = nextReq;
-        countDown = CONTROLLER_DELAY;
+        //countDown = CONTROLLER_DELAY;
         directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
-        free(pendingRequest);
-        pendingRequest = NULL;
+        // free(pendingRequest);
+        //pendingRequest = NULL;
         return;
     // } else {
     //     directory_req* nextReq = calloc(1, sizeof(directory_req));

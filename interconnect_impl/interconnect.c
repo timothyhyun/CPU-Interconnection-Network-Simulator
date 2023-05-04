@@ -90,7 +90,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int next
     nextReq->nextProcNum = nextProcNum;
     pending[rprocNum]->countDown = INTER_DELAY;
 
-    enq(pending[procNum], (void *)nextReq);
+    enq(pending[rprocNum], (void *)nextReq);
 }
 
 int tick()
