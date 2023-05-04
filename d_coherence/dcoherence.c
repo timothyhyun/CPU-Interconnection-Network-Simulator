@@ -25,6 +25,9 @@ tree_t** coherStates = NULL;
 int processorCount = 1;
 int CADSS_VERBOSE = 0;
 
+int cache_b = 0;
+int cache_s = 0;
+
 coher* self = NULL;
 interconn* inter_sim = NULL;
 direc* direct_sim = NULL;
@@ -68,6 +71,7 @@ coher* init(coher_sim_args* csa)
     self->busReq = busReq;
     self->cacheReq = cacheReq;
     self->registerCacheInterface = registerCacheInterface;
+    self->registerCacheParameters = registerCacheParameters;
 
     inter_sim->registerCoher(self);
     direct_sim->registerCoher(self);
@@ -86,6 +90,10 @@ void registerCacheInterface(void(*callback)(int, int, int64_t))
     cacheCallback = callback;
 }
 
+void registerCacheParameters(int s, int b) {
+    cache_b = b;
+    cache_s = s;
+}
 
 
 coherence_states getState(uint64_t addr, int processorNum)

@@ -88,7 +88,7 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int next
     nextReq->procNum = procNum;
     nextReq->rprocNum = rprocNum;
     nextReq->nextProcNum = nextProcNum;
-    pending[i]->countDown = INTER_DELAY;
+    pending[rprocNum]->countDown = INTER_DELAY;
 
     enq(pending[procNum], (void *)nextReq);
 }

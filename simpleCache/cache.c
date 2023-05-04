@@ -46,6 +46,7 @@ cache* init(cache_sim_args* csa)
                 
             // block size in bits
             case 'b':
+                coherComp->registerCacheParameters(0, optarg);
                 blockSize = 0x1 << atoi(optarg);
                 break;
                 

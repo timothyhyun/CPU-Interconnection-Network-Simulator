@@ -33,10 +33,19 @@ void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
     inter_sim->busReq(DATA, addr, procNum, rprocNum, -1);
 }
 
+long bitMask(long highbit, long lowbit)
+{
+    long mask1 = ((0x01L << 63) >> 63) ^ (0x01L << 63);
+    long hmask = mask1 >> (63 - highbit) | (0x01L << highbit);
+    long lmask = ((0x01L << 63) >> 63) << lowbit;
+    return hmask & lmask;
+}
+
 int findHomeProcessor(uint64_t addr, int procNum) {
     int k = (int)ceil(log2((double)processorCount));
-    
-    return procNum;
+    size_t tag = addr >> (cache_s + cache_b);
+    long mask = bitMask(k, 0);
+    return mask & tag;
 }
 
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {

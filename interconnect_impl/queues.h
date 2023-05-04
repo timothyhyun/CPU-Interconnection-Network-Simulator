@@ -12,10 +12,22 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-typedef struct queue queue_t;
+typedef struct list
+{
+  void *data;
+  struct list *next;
+  struct list *prev;
+} list_t;
 
-int enq(queue_t *Q);
-void deq(queue_t *Q, void *data);
+typedef struct queue
+{
+  list_t *q;
+  list_t *tail;
+  int countDown;
+} queue_t;
+
+void enq(queue_t *Q, void *data);
+void *dq(queue_t *Q);
 
 queue_t *new_Q();
 bool empty(queue_t *Q);

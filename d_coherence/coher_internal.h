@@ -7,7 +7,9 @@
 
 extern interconn* inter_sim;
 extern direc* direct_sim;
-extern processorCount;
+extern int processorCount;
+extern int cache_b;
+extern int cache_s;
 
 typedef enum _coherence_states {
   UNDEF = 0,  // As tree find returns NULL, we need an unused for NULL

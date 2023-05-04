@@ -4,20 +4,6 @@
 #include <assert.h>
 #include <queues.h>
 
-typedef struct list
-{
-  void *data;
-  struct list *next;
-  struct list *prev;
-  int countDown;
-} list_t;
-
-typedef struct queue
-{
-  list_t *q;
-  list_t *tail;
-} queue_t;
-
 void enq(queue_t *Q, void *data)
 {
   list_t *new = malloc(sizeof(list_t));

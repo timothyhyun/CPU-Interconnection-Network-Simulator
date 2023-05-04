@@ -238,7 +238,7 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
             int destx = index_to_x(dest);
             int desty = index_to_y(dest);
             if (destx > startx) {
-                return graphs->nodes[start].links[1];
+                return graph->nodes[start].links[1];
             } else if (destx < startx) {
                 return graph->nodes[start].links[3];
             } else if (desty > starty) {
