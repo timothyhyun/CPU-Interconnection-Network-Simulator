@@ -1,5 +1,6 @@
 #include "coher_internal.h"
 #include "directory.h"
+#include <math.h>
 
 // NEW PROTOCOLS
 // SEND INVALID
@@ -33,6 +34,8 @@ void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
 }
 
 int findHomeProcessor(uint64_t addr, int procNum) {
+    int k = (int)ceil(log2((double)processorCount));
+    
     return procNum;
 }
 

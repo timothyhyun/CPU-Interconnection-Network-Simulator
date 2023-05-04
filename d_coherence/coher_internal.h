@@ -7,6 +7,7 @@
 
 extern interconn* inter_sim;
 extern direc* direct_sim;
+extern processorCount;
 
 typedef enum _coherence_states {
   UNDEF = 0,  // As tree find returns NULL, we need an unused for NULL
@@ -41,21 +42,6 @@ typedef enum _cache_action {
 // Change Cache State then Send to Directory or Interconnect
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
 coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum, int rprocNum);
-
-coherence_states cacheMI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states snoopMI(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
-
-coherence_states cacheMSI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states snoopMSI(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
-
-coherence_states cacheMESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states snoopMESI(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
-
-coherence_states cacheMOESI(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states snoopMOESI(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
-
-coherence_states cacheMESIF(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states snoopMESIF(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum);
 
 int findHomeProcessor(uint64_t addr, int procNum);
 

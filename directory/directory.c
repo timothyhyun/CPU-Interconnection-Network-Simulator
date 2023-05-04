@@ -97,9 +97,7 @@ directory_states *getDirectoryState(uint64_t addr, int procNum) {
         // In practice we should have an init function for this
         lookState = malloc(sizeof(directory_states));
         lookState->state = D_INVALID;
-        for (int i = 0; i < 4; i++) {
-          lookState->directory[i] = 0;
-        }
+        lookState->directory = calloc(sizeof(bool), processorCount);
         tree_insert(directoryStates[procNum], addr, (void *)lookState);
     }
 

@@ -17,8 +17,8 @@ typedef enum _directory_status {
 
 typedef struct _directory_states {
   directory_status state;
-  // Im just assuming 4 processors we can change this later
-  int directory[4];
+  
+  int *directory;
 } directory_states;
 
 
