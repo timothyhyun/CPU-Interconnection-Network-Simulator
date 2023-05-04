@@ -174,6 +174,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             break;
         case D_INVALID:
             currentState->directory[procNum] = 1;
+            coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
             // add to cache recieving queue - Fetch?
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
@@ -182,7 +183,6 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // return SHARED;
 
                 // Send reads to other procs
-                currentState->directory[procNum] = 1;
                 currentState->state = D_SHARED;
             } else {
                 // MAYBE SEND DATA
@@ -191,8 +191,6 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // return EXCLUSIVE;
 
                 // Send invalidates to all other copies
-                coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
-                currentState->directory[procNum] = 1;
                 currentState->state = D_EXCLUSIVE;
             }
             break;
