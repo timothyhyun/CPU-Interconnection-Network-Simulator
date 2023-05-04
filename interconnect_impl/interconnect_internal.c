@@ -65,7 +65,7 @@ inline int xy_to_index(int x, int y) {
  */
 ic_network_t *new_network(int numProc, network_type type) {
     // We form the grid with some math.h magic:
-    l_dim = (int) floor(sqrt(4.0));
+    l_dim = (int) floor(sqrt(numProc));
     ic_network_t *res = malloc(sizeof(ic_network_t));
     res->type = type;
     res->nodes = malloc(sizeof(ic_node_t) * numProc); // We need to handle this differently in the custom case

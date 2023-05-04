@@ -24,7 +24,6 @@ int processorCount = 1;
 interconn* inter_sim = NULL;
 direc* self = NULL;
 coher* coherComp = NULL;
-cache* cs = NULL;
 
 const int CONTROLLER_DELAY = 5;
 
@@ -72,7 +71,6 @@ direc* init(direc_sim_args* dsa)
     }
     inter_sim = dsa->inter;
     coherComp = dsa->coher;
-    cs = dsa->cache;
     self = malloc(sizeof(direc));
     self->directoryReq = directoryReq;
     self->si.tick = tick;
