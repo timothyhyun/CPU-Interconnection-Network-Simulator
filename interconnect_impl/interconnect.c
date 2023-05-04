@@ -115,7 +115,7 @@ int tick()
         ic_req *curr_packet = network->nodes[i].curr_packet;
         if (curr_packet != NULL && curr_packet->procNum == i) {
             // Send to Cache
-            coherComp->cacheReq();
+            coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->procNum, curr_packet->nextProcNum);
         }
     }
     
