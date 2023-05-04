@@ -29,6 +29,9 @@ cache* init(cache_sim_args* csa)
 {
     int op;
     
+    coherComp = csa->coherComp;
+    coherComp->registerCacheInterface(coherCallback);
+
     // TODO - get argument list from assignment
     while ((op = getopt(csa->arg_count, csa->arg_list, "E:s:b:i:R:")) != -1)
     {
@@ -67,9 +70,6 @@ cache* init(cache_sim_args* csa)
     self->si.tick = tick;
     self->si.finish = finish;
     self->si.destroy = destroy;
-    
-    coherComp = csa->coherComp;
-    coherComp->registerCacheInterface(coherCallback);
     
     memCallback = calloc(processorCount, sizeof(memCallbackFunc));
     pendingTag = calloc(processorCount, sizeof(int));
