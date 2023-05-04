@@ -17,6 +17,7 @@ void sendRd(uint64_t addr, int procNum, int rprocNum) {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
         inter_sim->busReq(BUSRD, addr, procNum, rprocNum, -1);
     }
+    printf("send read");
 }
 
 void sendWr(uint64_t addr, int procNum, int rprocNum) {
@@ -25,7 +26,7 @@ void sendWr(uint64_t addr, int procNum, int rprocNum) {
     } else {
         inter_sim->busReq(BUSWR, addr, procNum, rprocNum, -1);
     }
-
+    printf("send write");
 }
 
 void sendDataBack(uint64_t addr, int procNum, int rprocNum) {
@@ -56,6 +57,7 @@ int findHomeProcessor(uint64_t addr, int procNum) {
 
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {
     int dest = findHomeProcessor(addr, procNum);
+    printf("Starting cacheDirectory from permReq");
     switch(currentState)
     {
         case INVALID:
@@ -109,7 +111,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
             break;
     }
-
+    
     return INVALID;
 }
 

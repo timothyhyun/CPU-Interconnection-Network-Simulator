@@ -163,6 +163,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
 
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 {
+    printf("recieiving permReq");
     if (processorNum < 0 || processorNum >= processorCount)
     {
         // ERROR
