@@ -62,6 +62,7 @@ inline int xy_to_index(int x, int y) {
  * routing, lest we use static routing, which is easy to accomplish 
  * with a basic use of DFS/BFS inserted into a lookup table. But for us, 
  * randomized routing is more than sufficient.
+ * We will assume numProc is a perfect square
  */
 ic_network_t *new_network(int numProc, network_type type) {
     // We form the grid with some math.h magic:
@@ -110,18 +111,63 @@ ic_network_t *new_network(int numProc, network_type type) {
                 ic_link_t *link1 = calloc(sizeof(ic_link_t), 1);
                 link0->start = i;
                 link0->dest = (i + 1) % numProc;
+                link0->busy = false;
                 link1->start = i;
                 link1->dest = (i - 1) < 0 ? (i - 1) + numProc : (i - 1);
+                link1->busy  = false;
                 res->nodes[i].links[0] = link0;
                 res->nodes[i].links[1] = link1;
             }
             break;
         case MESH:
-            // We would 8 links. Ordered as followed: 
-            // 0 1 2
-            // 3 x 4 
-            // 5 6 7 
+            // We would have 4 links in middle. Borders have 3. Corners have 2. Ordered as followed: 
+            //   0 
+            // 3 x 1 
+            //   2  
             // need to construct a grid for this???
+            for (int i = 0; i < numProc; i++) {
+                res->nodes[i].busy = false;
+                res->nodes[i].curr_packet = NULL;
+                res->nodes[i].id = i;
+                int x = index_to_x(i);
+                int y = index_to_y(i);
+                int numNeighbors = 0;
+                res->nodes[i].links = malloc(sizeof(ic_link_t) * 4);
+                if (y > 0) {
+                    numNeighbors++;
+                    ic_link_t *link0 = calloc(sizeof(ic_link_t), 1);
+                    link0->start = i;
+                    link0->dest = xy_to_index(x, y-1);
+                    link0->busy = false;
+                }
+                if (x < l_dim-1) {
+                    numNeighbors++;
+                    ic_link_t *link1 = calloc(sizeof(ic_link_t), 1);
+                    link1->start = i;
+                    link1->dest = xy_to_index(x+1, y);
+                    link0->busy = false;
+                }
+                if (y < l_dim-1) {
+                    numNeighbors++;
+                    ic_link_t *link2 = calloc(sizeof(ic_link_t), 1);
+                    link1->start = i;
+                    link1->dest = xy_to_index(x, y+1);
+                    link0->busy = false;
+                }
+                if (x > 0) {
+                    numNeighbors++;
+                    ic_link_t *link3 = calloc(sizeof(ic_link_t), 1);
+                    link1->start = i;
+                    link1->dest = xy_to_index(x-1, y);
+                    link0->busy = false;
+                }
+                res->nodes[i].num_neighbors = numNeighbors;
+                
+                
+
+
+                
+            }
             break;
         case TORUS:
             // you too, we won't test this for now???
@@ -192,7 +238,7 @@ void update(ic_network_t *graph) {
                 int idx = candc[next_link->dest]++;
                 candidates[next_link->dest][idx] = (uintptr_t)next_link;
                 // Move request out of graph to link. Now have to make sure to keep links. 
-                
+
             }
         }
     }
