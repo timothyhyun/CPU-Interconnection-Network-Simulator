@@ -42,6 +42,7 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 // nextProcessorNum: # to reply to
 void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum);
 void registerCacheInterface(void(*callback)(int, int, int64_t));
+void registerCacheParameters(int s, int b);
 
 coher* init(coher_sim_args* csa)
 {

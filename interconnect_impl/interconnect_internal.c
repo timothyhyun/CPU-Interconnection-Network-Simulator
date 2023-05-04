@@ -211,6 +211,10 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
     if (start == dest) {
         return NULL;
     }
+    int startx;
+    int starty;
+    int destx;
+    int desty;
     switch(graph->type) {
         case RING:
             ic_link_t *n1 = graph->nodes[start].links[0];
@@ -233,10 +237,10 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
             return n;
             break;
         case MESH:
-            int startx = index_to_x(start);
-            int starty = index_to_y(start);
-            int destx = index_to_x(dest);
-            int desty = index_to_y(dest);
+            startx = index_to_x(start);
+            starty = index_to_y(start);
+            destx = index_to_x(dest);
+            desty = index_to_y(dest);
             if (destx > startx) {
                 return graph->nodes[start].links[1];
             } else if (destx < startx) {
@@ -248,10 +252,10 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
             }
             break;
         case TORUS: 
-            int startx = index_to_x(start);
-            int starty = index_to_y(start);
-            int destx = index_to_x(dest);
-            int desty = index_to_y(dest);
+            startx = index_to_x(start);
+            starty = index_to_y(start);
+            destx = index_to_x(dest);
+            desty = index_to_y(dest);
             if (destx != startx) {
                 return graph->nodes[start].links[2];
             } else {
