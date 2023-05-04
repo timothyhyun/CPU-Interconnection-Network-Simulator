@@ -27,11 +27,11 @@ int64_t* memOpTag = NULL;
 processor* init(processor_sim_args* psa)
 {
     int op;
-    
+
     tr = psa->tr;
     cs = psa->cache_sim;
     bs = psa->branch_sim;
-    
+
     // TODO - get argument list from assignment
     while ((op = getopt(psa->arg_count, psa->arg_list, "f:d:m:j:k:c:")) != -1)
     {
@@ -39,40 +39,40 @@ processor* init(processor_sim_args* psa)
         {
             // fetch rate
             case 'f':
-            
+
                 break;
-                
+
             // dispatch queue multiplier
             case 'd':
-            
+
                 break;
-                
+
             // Schedule queue multiplier
             case 'm':
-            
+
                 break;
-                
+
             // Number of fast ALUs
             case 'j':
-            
+
                 break;
-                
+
             // Number of long ALUs
             case 'k':
-            
+
                 break;
-                
+
             // Number of CDBs
             case 'c':
-            
+
                 break;
         }
     }
-    
+
     pendingBranch = calloc(processorCount, sizeof(int));
     pendingMem = calloc(processorCount, sizeof(int));
     memOpTag = calloc(processorCount, sizeof(int64_t));
-    
+
     return 0;
 }
 
@@ -89,7 +89,7 @@ void memOpCallback(int64_t tag)
 {
     int procNum = (tag & 0xff);
     int64_t baseTag = (tag >> 8);
-    
+
     // Is the completed memop one that is pending?
     if (baseTag == memOpTag[procNum])
     {
@@ -105,18 +105,18 @@ void memOpCallback(int64_t tag)
 
 int tick(void)
 {
-    // if room in pipeline, request op from trace 
+    // if room in pipeline, request op from trace
     //   for the sample processor, it requests an op
     //   each tick until it reaches a branch or memory op
     //   then it blocks on that op
-    
+
     trace_op* nextOp = NULL;
-    
+
     // Pass along to the branch predictor and cache simulator that time ticked
     bs->si.tick();
     cs->si.tick();
     tickCount++;
-    
+
     if (tickCount == stallCount)
     {
         printf("Processor may be stalled.  Now at tick - %ld, last op at %ld\n",
@@ -130,7 +130,7 @@ int tick(void)
             }
         }
     }
-    
+
     int progress = 0;
     int i;
     for (i = 0; i < processorCount; i++)
@@ -140,7 +140,7 @@ int tick(void)
             progress = 1;
             continue;
         }
-    
+
         // In the full processor simulator, the branch is pending until
         //   it has executed.
         if (pendingBranch[i] > 0)
@@ -149,14 +149,14 @@ int tick(void)
             progress = 1;
             continue;
         }
-    
+
         // TODO: get and manage ops for each processor core
         nextOp = tr->getNextOp(i);
-        
+
         if (nextOp == NULL) continue;
-        
+
         progress = 1;
-        
+
         switch(nextOp->op)
         {
             case MEM_LOAD:
@@ -164,20 +164,20 @@ int tick(void)
                 pendingMem[i] = 1;
                 cs->memoryRequest(nextOp, i, makeTag(i, memOpTag[i]), memOpCallback);
                 break;
-            
+
             case BRANCH:
                 pendingBranch[i] = (bs->branchRequest(nextOp, i) == nextOp->nextPCAddress)?0:1;
                 break;
-                
+
             case ALU:
             case ALU_LONG:
-                
+
                 break;
         }
-        
+
         free(nextOp);
     }
-    
+    // printf("tick\n");
     return progress;
 }
 
@@ -185,12 +185,12 @@ int finish(int outFd)
 {
     int c = cs->si.finish(outFd);
     int b = bs->si.finish(outFd);
-    
+
     char buf[32];
     size_t charCount = snprintf(buf, 32, "Ticks - %ld\n", tickCount);
-    
+
     write(outFd, buf, charCount + 1);
-    
+
     if (b || c) return 1;
     return 0;
 }
@@ -199,7 +199,7 @@ int destroy(void)
 {
     int c = cs->si.destroy();
     int b = bs->si.destroy();
-    
+
     if (b || c) return 1;
     return 0;
 }

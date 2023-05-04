@@ -152,7 +152,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
     {
         setState(addr, processorNum, nextState);
     }
-
+    printf("busReq finishes\n");
     return 0;
 }
 
@@ -173,6 +173,7 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
     setState(addr, processorNum, nextState);
 
+    printf("permReq finishes\n");
     return permAvail;
 }
 
