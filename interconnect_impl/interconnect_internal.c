@@ -139,34 +139,33 @@ ic_network_t *new_network(int numProc, network_type type) {
                     link0->start = i;
                     link0->dest = xy_to_index(x, y-1);
                     link0->busy = false;
+                    res->nodes[i].links[0] = link0;
                 }
                 if (x < l_dim-1) {
                     numNeighbors++;
                     ic_link_t *link1 = calloc(sizeof(ic_link_t), 1);
                     link1->start = i;
                     link1->dest = xy_to_index(x+1, y);
-                    link0->busy = false;
+                    link1->busy = false;
+                    res->nodes[i].links[1] = link1;
                 }
                 if (y < l_dim-1) {
                     numNeighbors++;
                     ic_link_t *link2 = calloc(sizeof(ic_link_t), 1);
-                    link1->start = i;
-                    link1->dest = xy_to_index(x, y+1);
-                    link0->busy = false;
+                    link2->start = i;
+                    link2->dest = xy_to_index(x, y+1);
+                    link2->busy = false;
+                    res->nodes[i].links[2] = link2;
                 }
                 if (x > 0) {
                     numNeighbors++;
                     ic_link_t *link3 = calloc(sizeof(ic_link_t), 1);
-                    link1->start = i;
-                    link1->dest = xy_to_index(x-1, y);
-                    link0->busy = false;
+                    link3->start = i;
+                    link3->dest = xy_to_index(x-1, y);
+                    link3->busy = false;
+                    res->nodes[i].links[3] = link3;
                 }
-                res->nodes[i].num_neighbors = numNeighbors;
-                
-                
-
-
-                
+                res->nodes[i].num_neighbors = numNeighbors;  
             }
             break;
         case TORUS:
@@ -186,9 +185,9 @@ ic_network_t *new_network(int numProc, network_type type) {
                 link1->start = i;
                 link2->start = i;
                 link3->start = i;
-                link0->dest = xy_to_index((x + 1) % l_dim, y);
+                link0->dest = xy_to_index((x - 1) % l_dim, y);
                 link1->dest = xy_to_index(x, (y + 1) % (numProc / l_dim));
-                link2->dest = xy_to_index((x - 1) < 0 ? l_dim - 1 : (x - 1), y);
+                link2->dest = xy_to_index((x + 1) < 0 ? l_dim - 1 : (x - 1), y);
                 link3->dest = xy_to_index(x, (y - 1) < 0 ? (numProc / l_dim) - 1 : (y - 1));
                 // link[0] goes left, 1 down, 2 right, 3 up
                 res->nodes[i].links[0] = link0;
@@ -200,7 +199,6 @@ ic_network_t *new_network(int numProc, network_type type) {
         case CUSTOM:
         // We construct the graph from a file in this case
         default:
-
             break;
     }
     return res;
@@ -233,6 +231,32 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
                 n = graph->nodes[start].links[dest];
             }
             return n;
+            break;
+        case MESH:
+            int startx = index_to_x(start);
+            int starty = index_to_y(start);
+            int destx = index_to_x(dest);
+            int desty = index_to_y(dest);
+            if (destx > startx) {
+                return graphs->nodes[start].links[1];
+            } else if (destx < startx) {
+                return graph->nodes[start].links[3];
+            } else if (desty > starty) {
+                return graph->nodes[start].links[2];
+            } else {
+                return graph->nodes[start].links[0];
+            }
+            break;
+        case TORUS: 
+            int startx = index_to_x(start);
+            int starty = index_to_y(start);
+            int destx = index_to_x(dest);
+            int desty = index_to_y(dest);
+            if (destx != startx) {
+                return graph->nodes[start].links[2];
+            } else {
+                return graph->nodes[start].links[1];
+            } 
             break;
         default:
             return NULL;
