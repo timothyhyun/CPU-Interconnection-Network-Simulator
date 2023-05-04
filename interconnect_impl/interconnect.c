@@ -27,24 +27,20 @@ void registerCoher(coher* cc);
 void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum);
 
 ic_network_t *network = NULL;
-network_type nt = CROSSBAR;
+network_type nt = TORUS;
 
 interconn* init(inter_sim_args* isa)
 {
     int op;
-    
-    while ((op = getopt(isa->arg_count, isa->arg_list, "t:v")) != -1)
+    while ((op = getopt(isa->arg_count, isa->arg_list, "v")) != -1)
     {
         switch (op)
         {
-            case 't':
-                nt = atoi(optarg);
-                break;
             default:
                 break;
         }
     }
-    
+
 
     pending = malloc(sizeof(queue_t*) * processorCount);
 
@@ -52,7 +48,7 @@ interconn* init(inter_sim_args* isa)
     {
         pending[i] = new_Q();
     }
-    
+
     self = malloc(sizeof(interconn));
     self->busReq = busReq;
     self->registerCoher = registerCoher;
@@ -61,7 +57,7 @@ interconn* init(inter_sim_args* isa)
     self->si.destroy = destroy;
 
     network = new_network(processorCount, nt);
-    
+
     return self;
 }
 
@@ -79,8 +75,8 @@ void registerCoher(coher* cc)
 /**
  * In a generalized interconnect, busReq will just queue up a request. At each
  * tick of the interconnect, we just deq a rqeuest and place it in the endpoint
- * of procNum. 
- * 
+ * of procNum.
+ *
  */
 void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum)
 {
@@ -106,7 +102,7 @@ int tick()
                 if (temp != NULL) {
                     network->nodes[i].curr_packet = temp;
                     pending[i]->countDown = INTER_DELAY;
-                }   
+                }
             }
         }
 
@@ -121,7 +117,7 @@ int tick()
             coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->procNum, curr_packet->nextProcNum);
         }
     }
-    
+
     return 1;
 }
 
@@ -133,6 +129,6 @@ int finish(int outFd)
 int destroy(void)
 {
     // TODO
-    
+
     return 0;
 }

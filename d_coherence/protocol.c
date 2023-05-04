@@ -41,10 +41,16 @@ long bitMask(long highbit, long lowbit)
     return hmask & lmask;
 }
 
+int mylog(int x) {
+  int result = 0;
+  while (x >>= 1) result++;
+  return result;
+}
+
 int findHomeProcessor(uint64_t addr, int procNum) {
-    int k = (int)ceil(log2((double)processorCount));
+    int k = mylog(processorCount);
     size_t tag = addr >> (cache_s + cache_b);
-    long mask = bitMask(k, 0);
+    long mask = bitMask(k - 1, 0);
     return mask & tag;
 }
 

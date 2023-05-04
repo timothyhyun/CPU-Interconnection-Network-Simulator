@@ -298,6 +298,19 @@ cache_impl_final/fast:
 	$(MAKE) $(MAKESILENT) -f cache_impl_final/CMakeFiles/cache_impl_final.dir/build.make cache_impl_final/CMakeFiles/cache_impl_final.dir/build
 .PHONY : cache_impl_final/fast
 
+#=============================================================================
+# Target rules for targets named interconnect_impl
+
+# Build rule for target.
+interconnect_impl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 interconnect_impl
+.PHONY : interconnect_impl
+
+# fast build rule for target.
+interconnect_impl/fast:
+	$(MAKE) $(MAKESILENT) -f interconnect_impl/CMakeFiles/interconnect_impl.dir/build.make interconnect_impl/CMakeFiles/interconnect_impl.dir/build
+.PHONY : interconnect_impl/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -315,6 +328,7 @@ help:
 	@echo "... d_coherence"
 	@echo "... directory"
 	@echo "... interconnect"
+	@echo "... interconnect_impl"
 	@echo "... processor"
 	@echo "... processor_impl"
 	@echo "... simpleCache"

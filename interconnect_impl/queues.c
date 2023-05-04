@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
-#include <queues.h>
+#include "queues.h"
 
 void enq(queue_t *Q, void *data)
 {

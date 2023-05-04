@@ -153,6 +153,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
         setState(addr, processorNum, nextState);
     }
 
+    printf("Finished recieve cache request");
     return 0;
 }
 
@@ -183,6 +184,9 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum)
 {
     // Add to pending Queue
+
+
+    printf("Recieving request from interconnect");
     if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));
         nextReq->brt = reqType;
@@ -199,6 +203,16 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
         nextReq->nextProcNum = nextProcessorNum;
         queuedRequests = nextReq;
     }
+
+
+    if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
+        direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+    // Is either fetch, invalidate, or data
+    } else {
+        busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+    }
+    free(pendingRequest);
+    pendingRequest = NULL;
 }
 
 
@@ -210,28 +224,28 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
 int tick()
 {
     // Start processing Queue
-    if (countDown > 0) {
-        countDown--;
-        if (countDown == 0) {
-            if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
-                direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
-            // Is either fetch, invalidate, or data
-            } else {
-                busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
-            }
-            free(pendingRequest);
-            pendingRequest = NULL;
-        }
-    } else {
-        if (queuedRequests != NULL) {
-            pendingRequest = queuedRequests;
-            queuedRequests = NULL;
-            countDown = CONTROLLER_DELAY;
-        }
-    }
+    // if (countDown > 0) {
+    //     countDown--;
+    //     if (countDown == 0) {
+    //         if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
+    //             direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+    //         // Is either fetch, invalidate, or data
+    //         } else {
+    //             busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+    //         }
+    //         free(pendingRequest);
+    //         pendingRequest = NULL;
+    //     }
+    // } else {
+    //     if (queuedRequests != NULL) {
+    //         pendingRequest = queuedRequests;
+    //         queuedRequests = NULL;
+    //         countDown = CONTROLLER_DELAY;
+    //     }
+    // }
 
 
-    direct_sim->si.tick();
+    // direct_sim->si.tick();
     return inter_sim->si.tick();
 
 

@@ -20,6 +20,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "directory/CMakeLists.txt"
   "engine/CMakeLists.txt"
   "interconnect/CMakeLists.txt"
+  "interconnect_impl/CMakeLists.txt"
   "processor/CMakeLists.txt"
   "processor_impl/CMakeLists.txt"
   "simpleCache/CMakeLists.txt"
@@ -67,6 +68,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "directory/CMakeFiles/CMakeDirectoryInformation.cmake"
   "d_coherence/CMakeFiles/CMakeDirectoryInformation.cmake"
   "cache_impl_final/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "interconnect_impl/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -85,4 +87,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "directory/CMakeFiles/directory.dir/DependInfo.cmake"
   "d_coherence/CMakeFiles/d_coherence.dir/DependInfo.cmake"
   "cache_impl_final/CMakeFiles/cache_impl_final.dir/DependInfo.cmake"
+  "interconnect_impl/CMakeFiles/interconnect_impl.dir/DependInfo.cmake"
   )

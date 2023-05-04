@@ -163,7 +163,15 @@ d_coherence/CMakeFiles/d_coherence.dir/protocol.c.o: d_coherence/protocol.c \
   /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
   /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
   /usr/include/x86_64-linux-gnu/bits/stdio.h \
-  /usr/include/x86_64-linux-gnu/bits/stdio2.h
+  /usr/include/x86_64-linux-gnu/bits/stdio2.h \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h
 
 d_coherence/CMakeFiles/d_coherence.dir/stree.c.o: d_coherence/stree.c \
   /usr/include/stdc-predef.h \
@@ -227,6 +235,14 @@ d_coherence/CMakeFiles/d_coherence.dir/stree.c.o: d_coherence/stree.c \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib.h
 
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
+
+/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
+
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
+/usr/include/math.h:
 
 d_coherence/protocol.c:
 
@@ -292,6 +308,8 @@ common/interconnect.h:
 
 d_coherence/stree.c:
 
+/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
+
 common/common.h:
 
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
@@ -318,7 +336,11 @@ common/coherence.h:
 
 /usr/include/x86_64-linux-gnu/bits/timesize.h:
 
+/usr/include/x86_64-linux-gnu/bits/fp-fast.h:
+
 /usr/include/stdint.h:
+
+/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
 
@@ -333,6 +355,8 @@ common/coherence.h:
 /usr/include/endian.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
 
