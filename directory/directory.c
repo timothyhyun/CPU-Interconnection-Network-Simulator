@@ -203,7 +203,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
 void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum)
 {
     // Add to pending Queue
-    if (pendingRequest == NULL) {
+    // if (pendingRequest == NULL) {
         directory_req* nextReq = calloc(1, sizeof(directory_req));
         nextReq->brt = reqType;
         nextReq->addr = addr;
@@ -211,16 +211,19 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
         nextReq->rprocNum = rprocNum;
         pendingRequest = nextReq;
         countDown = CONTROLLER_DELAY;
+        directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
+        free(pendingRequest);
+        pendingRequest = NULL;
         return;
-    } else {
-        directory_req* nextReq = calloc(1, sizeof(directory_req));
-        nextReq -> brt = reqType;
-        nextReq->addr = addr;
-        nextReq->procNum = procNum;
-        nextReq->rprocNum = rprocNum;
-        // Uhhhh idk lol. The ref doesnt look like it should work so I will wait on this lol
-        queuedRequests = nextReq;
-    }
+    // } else {
+    //     directory_req* nextReq = calloc(1, sizeof(directory_req));
+    //     nextReq -> brt = reqType;
+    //     nextReq->addr = addr;
+    //     nextReq->procNum = procNum;
+    //     nextReq->rprocNum = rprocNum;
+    //     // Uhhhh idk lol. The ref doesnt look like it should work so I will wait on this lol
+    //     queuedRequests = nextReq;
+    // }
 
 
 }
@@ -228,22 +231,22 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
 int tick()
 {
     // Start Processing Queue and calls directory()
-    if (countDown > 0)
-    {
-        countDown--;
-        if (countDown == 0) {
-            directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
-            free(pendingRequest);
-            pendingRequest = NULL;
-        }
-    } else {
-        if (queuedRequests != NULL) {
-            pendingRequest = queuedRequests;
-            // All this may need to be changed
-            queuedRequests = NULL;
-            countDown = CONTROLLER_DELAY;
-        }
-    }
+    // if (countDown > 0)
+    // {
+    //     countDown--;
+    //     if (countDown == 0) {
+    //         directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
+    //         free(pendingRequest);
+    //         pendingRequest = NULL;
+    //     }
+    // } else {
+    //     if (queuedRequests != NULL) {
+    //         pendingRequest = queuedRequests;
+    //         // All this may need to be changed
+    //         queuedRequests = NULL;
+    //         countDown = CONTROLLER_DELAY;
+    //     }
+    // }
     return 0;
 }
 
