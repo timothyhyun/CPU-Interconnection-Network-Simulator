@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <interconnect.h>
 
+
 typedef enum {
   CROSSBAR = 0,
   RING,
@@ -38,7 +39,6 @@ typedef struct _ic_req {
     int nextProcNum;
     uint8_t shared;
     uint8_t data;
-    struct _ic_req *next;
 } ic_req;
 
 /**
@@ -72,6 +72,8 @@ typedef struct ic_network {
   int size; // size of nodes
   // ic_link_t ***in_links; // record all links into nodes
 } ic_network_t;
+
+
 
 ic_network_t *new_network(int numProc, network_type type);
 void update(ic_network_t *graph);

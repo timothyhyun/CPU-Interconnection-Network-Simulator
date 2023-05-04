@@ -2,6 +2,12 @@
 #include "interconnect_internal.h"
 #include <stdio.h>
 #include <getopt.h>
+#include "queues.h"
+
+
+
+
+queue_t **pending = NULL;
 
 ic_req* pendingRequest = NULL;
 ic_req** queuedRequests;
@@ -11,6 +17,8 @@ coher* coherComp;
 int CADSS_VERBOSE = 0;
 int processorCount = 1;
 
+
+const int INTER_DELAY = 10;
 const int CACHE_DELAY = 10;
 const int CACHE_TRANSFER = 10;
 const int BUS_TIME = 90;  // TODO - model using a memory component
@@ -34,10 +42,12 @@ interconn* init(inter_sim_args* isa)
         }
     }
     
-    queuedRequests = malloc(sizeof(ic_req*) * processorCount);
+
+    pending = malloc(sizeof(queue_t*) * processorCount);
+
     for (int i = 0; i < processorCount; i++)
     {
-        queuedRequests[i] = NULL;
+        pending[i] = new_Q();
     }
     
     self = malloc(sizeof(interconn));
@@ -78,12 +88,27 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int next
     nextReq->procNum = procNum;
     nextReq->rprocNum = rprocNum;
     nextReq->nextProcNum = nextProcNum;
+    pending[i]->countDown = INTER_DELAY;
 
-    queuedRequests[procNum] = nextReq;
+    enq(pending[procNum], (void *)nextReq);
 }
 
 int tick()
 {
+    for (int i = 0; i < processorCount; i++) {
+        if (pending[i]->countDown > 0) {
+            pending[i]->countDown--;
+            if (pending[i]->countDown == 0) {
+                ic_req *temp = (ic_req*) dq(pending[i]);
+                if (temp != NULL) {
+                    network->nodes[i].curr_packet = temp;
+                    pending[i]->countDown = INTER_DELAY;
+                }   
+            }
+        }
+
+    }
+
     update(network);
 
     for (int i = 0; i < network->size; i++) {
