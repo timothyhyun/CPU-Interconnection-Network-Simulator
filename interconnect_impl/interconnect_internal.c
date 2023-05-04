@@ -117,6 +117,10 @@ ic_network_t *new_network(int numProc, network_type type) {
             }
             break;
         case MESH:
+            // We would 8 links. Ordered as followed: 
+            // 0 1 2
+            // 3 x 4 
+            // 5 6 7 
             // need to construct a grid for this???
             break;
         case TORUS:
@@ -131,9 +135,12 @@ ic_network_t *new_network(int numProc, network_type type) {
     return res;
 }
 
+
+// Route returns the link we choose to use. 
 ic_link_t *route(int start, int dest, ic_network_t *graph) {
+    // This should not exist but just in case       
     if (start == dest) {
-        return dest;
+        return NULL;
     }
     switch(graph->type) {
         case RING:
@@ -148,6 +155,13 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
             }
             break;
         case CROSSBAR:
+            ic_link_t *n;
+            if (dest > start) {
+                n = graph->nodes[start].links[dest-1];
+            } else {
+                n = graph->nodes[start].links[dest];
+            }
+            return n;
             break;
         default:
             return NULL;
@@ -155,6 +169,9 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
 }
 
 void update(ic_network_t *graph) {
+    // Have to load in request from queue. 
+    // Iterate 
+
     int numNodes = graph->size;
 
     uintptr_t **candidates = malloc(sizeof(uintptr_t *) * numNodes);
@@ -166,10 +183,16 @@ void update(ic_network_t *graph) {
     for (int i = 0; i < numNodes; i++) {
         ic_req *packet = graph->nodes[i].curr_packet;
         if (packet != NULL && graph->nodes[i].busy) {
+            // Finds link to go down
             ic_link_t *next_link = route(i, packet->procNum, graph);
             if (next_link != NULL) {
+                // candidates[i] = list of links that want send to node i.
+                next_link->busy = true;
+                next_link->curr_packet = packet;
                 int idx = candc[next_link->dest]++;
                 candidates[next_link->dest][idx] = (uintptr_t)next_link;
+                // Move request out of graph to link. Now have to make sure to keep links. 
+                
             }
         }
     }
@@ -182,6 +205,15 @@ void update(ic_network_t *graph) {
             ic_link_t *link = candidates[i][winner];
             graph->nodes[i].curr_packet = link->curr_packet;
             graph->nodes[i].busy = true;
+            graph->nodes[link->start].curr_packet = NULL;
+            graph->nodes[link->start].busy = false;
+            link->curr_packet = NULL;
+            link->busy = false;
         }
     }
+    free(candc);
+    for (int l = 0; l < numNodes; l++) {
+        free(candidates[l]);
+    }
+    free(candidates);
 }

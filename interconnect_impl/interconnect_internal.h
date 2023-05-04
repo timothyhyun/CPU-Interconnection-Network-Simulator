@@ -54,6 +54,7 @@ typedef struct ic_link {
 } ic_link_t;
 
 typedef struct ic_node {
+  // Order of Graph: number of vertices
     int id; // > 1 and < ic_network->order if it's an endpoint, else > order
     ic_req *curr_packet; 
     ic_link_t **links;

@@ -89,7 +89,8 @@ int tick()
     for (int i = 0; i < network->size; i++) {
         ic_req *curr_packet = network->nodes[i].curr_packet;
         if (curr_packet != NULL && curr_packet->procNum == i) {
-
+            // Send to Cache
+            coherComp->cacheReq();
         }
     }
     
