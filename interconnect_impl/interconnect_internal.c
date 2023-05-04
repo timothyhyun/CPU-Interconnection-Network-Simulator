@@ -131,7 +131,7 @@ ic_network_t *new_network(int numProc, network_type type) {
     return res;
 }
 
-int route(int start, int dest, ic_network_t *graph) {
+ic_link_t *route(int start, int dest, ic_network_t *graph) {
     if (start == dest) {
         return dest;
     }
@@ -144,18 +144,44 @@ int route(int start, int dest, ic_network_t *graph) {
             } else if (n2 && !n2->busy) {
                 return n2;
             } else {
-              return start;
+              return NULL;
             }
             break;
         case CROSSBAR:
             break;
         default:
-            return -1;
+            return NULL;
     }
 }
 
 void update(ic_network_t *graph) {
     int numNodes = graph->size;
 
-    
+    uintptr_t **candidates = malloc(sizeof(uintptr_t *) * numNodes);
+     for (int i = 0; i < numNodes; i++) {
+       candidates[i] = calloc(sizeof(uintptr_t), numNodes);
+     }
+     int *candc = calloc(sizeof(int), numNodes);
+
+    for (int i = 0; i < numNodes; i++) {
+        ic_req *packet = graph->nodes[i].curr_packet;
+        if (packet != NULL && graph->nodes[i].busy) {
+            ic_link_t *next_link = route(i, packet->procNum, graph);
+            if (next_link != NULL) {
+                int idx = candc[next_link->dest]++;
+                candidates[next_link->dest][idx] = (uintptr_t)next_link;
+            }
+        }
+    }
+
+    for (int i = 0; i < numNodes; i++) {
+        // pick a winner for each node
+        int count = candc[i];
+        if (count > 0 && graph->nodes[i].curr_packet == NULL && !graph->nodes[i].busy) {
+            int winner = (int)rand_max_n((uint64_t)count);
+            ic_link_t *link = candidates[i][winner];
+            graph->nodes[i].curr_packet = link->curr_packet;
+            graph->nodes[i].busy = true;
+        }
+    }
 }

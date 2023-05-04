@@ -275,22 +275,6 @@ int main(int argc, char** argv)
     {
         
     }
-
-    // Add directory
-    arg = getSettings("directory", &argCount);
-    if (arg = NULL)
-    {
-        
-    }
-    direc_sim_args dsa;
-    dsa.arg_count = argCount;
-    dsa.arg_list = arg;
-    dsa.inter = inter_sim;
-    optind = 1;
-    if ((direct_sim = dsim->init(&dsa)) == NULL)
-    {
-        
-    }
     
     arg = getSettings("coherence", &argCount);
     if (arg == NULL)
@@ -328,6 +312,24 @@ int main(int argc, char** argv)
     optind = 1;
     arg = getSettings("branch", &argCount);
     if (arg == NULL)
+    {
+        
+    }
+
+    // Add directory
+    arg = getSettings("directory", &argCount);
+    if (arg = NULL)
+    {
+        
+    }
+    direc_sim_args dsa;
+    dsa.arg_count = argCount;
+    dsa.arg_list = arg;
+    dsa.inter = inter_sim;
+    dsa.cache = cache_sim;
+    dsa.coher = coher_sim;
+    optind = 1;
+    if ((direct_sim = dsim->init(&dsa)) == NULL)
     {
         
     }

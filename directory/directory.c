@@ -23,7 +23,8 @@ tree_t** directoryStates = NULL;
 int processorCount = 1;
 interconn* inter_sim = NULL;
 direc* self = NULL;
-coher* coherComp;
+coher* coherComp = NULL;
+cache* cs = NULL;
 
 const int CONTROLLER_DELAY = 5;
 
@@ -71,6 +72,7 @@ direc* init(direc_sim_args* dsa)
     }
     inter_sim = dsa->inter;
     coherComp = dsa->coher;
+    cs = dsa->cache;
     self = malloc(sizeof(direc));
     self->directoryReq = directoryReq;
     self->si.tick = tick;
@@ -180,12 +182,6 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // return SHARED;
 
                 // Send reads to other procs
-                for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
-                        sendFetch(addr, i, procNum, rprocNum);
-                        break;
-                    }
-                }
                 currentState->directory[procNum] = 1;
                 currentState->state = D_SHARED;
             } else {
@@ -195,12 +191,6 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // return EXCLUSIVE;
 
                 // Send invalidates to all other copies
-                for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
-                        currentState->directory[i] = 0;
-                        sendInvalidate(addr, procNum, i);
-                    }
-                }
                 coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
                 currentState->directory[procNum] = 1;
                 currentState->state = D_EXCLUSIVE;
