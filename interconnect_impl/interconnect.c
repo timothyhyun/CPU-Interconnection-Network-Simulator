@@ -80,6 +80,7 @@ void registerCoher(coher* cc)
  */
 void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum)
 {
+    assert(procNum >= 0);
     ic_req* nextReq = calloc(1, sizeof(ic_req));
     nextReq->brt = brt;
     nextReq->currentState = QUEUED;

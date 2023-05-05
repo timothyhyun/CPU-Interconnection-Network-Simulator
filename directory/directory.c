@@ -35,7 +35,7 @@ int countDown = 0;
 
 // send from directory to cache
 // directoryNum sending fetch request to procNum which will send data back to rprocNum
-void sendFetch(uint64_t addr, int procNum, int rprocNum, int directoryNum) {
+void sendFetch(uint64_t addr, int procNum, int directoryNum, int rprocNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
     if (procNum == directoryNum) {

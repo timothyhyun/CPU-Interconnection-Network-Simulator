@@ -6,24 +6,24 @@
 // SEND INVALID
 // CHANGE ARGS TO INCLUDE PROC NUMBER
 // ProcNum: cache procNUm
-// Dest:DUH 
-void sendRd(uint64_t addr, int procNum, int dest) {
+// Dest:DUH
+void sendRd(uint64_t addr, int dest, int procNum) {
     // If to own directory: place in directory rec queue
     // else place in inter->busReq
-    if (procNum == rprocNum) {
+    if (procNum == dest) {
         // Go to directory
         direct_sim->directoryReq(BUSRD, addr, dest, procNum);
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
-        inter_sim->busReq(BUSRD, addr, dest, procNum, -1);
+        inter_sim->busReq(BUSRD, addr, dest, procNum, procNum);
     }
 }
 
-void sendWr(uint64_t addr, int procNum, int dest) {
-    if (procNum == rprocNum) {
+void sendWr(uint64_t addr, int dest, int procNum) {
+    if (procNum == dest) {
         direct_sim->directoryReq(BUSWR, addr, dest, procNum);
     } else {
-        inter_sim->busReq(BUSWR, addr, dest, procNum, -1);
+        inter_sim->busReq(BUSWR, addr, dest, procNum, procNum);
     }
 
 }
@@ -68,11 +68,11 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             *permAvail = 0;
             if (is_read)
             {
-                sendRd(addr, procNum, dest);
+                sendRd(addr, dest, procNum);
                 printf("cacheDirectory exit\n");
                 return INVALID_SHARED;
             }
-            sendWr(addr, procNum, dest);
+            sendWr(addr, dest, procNum);
             printf("cacheDirectory exit\n");
             return INVALID_MODIFIED;
         case MODIFIED:
@@ -96,7 +96,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
                 return SHARED_STATE;
             }
             *permAvail = 0;
-            sendWr(addr, procNum, dest);
+            sendWr(addr, dest, procNum);
             printf("cacheDirectory exit\n");
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
@@ -135,7 +135,8 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
     {
         case INVALID:
             // Cache does not have. go to memory (out of scope)
-            printf("processCache exit\n");
+            printf("processCache exit, %d\n", __LINE__);
+            sendDataBack(addr, rprocNum, procNum);
             return INVALID;
         case MODIFIED:
             if (reqType = FETCH)
