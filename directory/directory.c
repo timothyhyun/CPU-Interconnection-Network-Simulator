@@ -38,7 +38,7 @@ int countDown = 0;
 void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
-    printf("%d sending fetch to %d about %lX and will reply to", sourceNum, destNum, addr, replyNum);
+    printf("%d sending fetch to %d about %lX and will reply to\n", sourceNum, destNum, addr, replyNum);
     if (destNum == sourceNum) {
         coherComp->cacheReq(FETCH, addr, destNum, replyNum);
 
@@ -51,7 +51,7 @@ void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
 
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int destNum, int sourceNum, int replyNum){
-    printf("%d sending invalidate to %d for %lX", sourceNum, destNum, addr);
+    printf("%d sending invalidate to %d for %lX\n", sourceNum, destNum, addr);
     if (sourceNum == destNum) {
         printf("over directly\n");
         coherComp->cacheReq(IC_INVALIDATE, addr, destNum, replyNum);
@@ -207,7 +207,8 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             break;
     }
     setDirectoryState(addr, procNum, currentState);
-    // printf("directory call exit\n");
+
+    printf("directory call exit\n");
 }
 
 
