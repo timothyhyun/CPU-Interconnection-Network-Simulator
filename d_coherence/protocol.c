@@ -35,8 +35,8 @@ void sendWr(uint64_t addr, int destNum, int sourceNum) {
 
 }
 
-void sendDataBack(uint64_t addr, int destNum, int sourceNum) {   
-    printf("%d is sending to %d about %lX\n", sourceNum, destNum, addr); 
+void sendDataBack(uint64_t addr, int destNum, int sourceNum) {
+    printf("%d is sending to %d about %lX\n", sourceNum, destNum, addr);
     inter_sim->busReq(DATA, addr, destNum, sourceNum, sourceNum);
 }
 
@@ -73,8 +73,11 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
         SAME
         */
             *permAvail = 0;
-            if (is_read)
-            {
+            if (destNum == procNum) {
+                *permAvail = 1;
+
+            }
+            if (is_read) {
                 // DEST, SOURCE
                 sendRd(addr, destNum, procNum);
                 return INVALID_SHARED;
@@ -101,6 +104,9 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
                 return SHARED_STATE;
             }
             *permAvail = 0;
+            if (destNum == procNum) {
+                *permAvail = 1;
+            }
             // DEST SOURCE
             sendWr(addr, destNum, procNum);
             return SHARED_MODIFIED;

@@ -12,11 +12,11 @@
 int l_dim = 0;
 
 /**
- * From Stack Overflow: 
+ * From Stack Overflow:
  * https://stackoverflow.com/questions/2509679/how-to-generate-a-random-integer-number-from-within-a-range
- * 
+ *
  * So our RNG isn't.. horrific?
- * 
+ *
  * Again, we use random() as per cppreference's note on how bad rand() is
  */
 uint64_t rand_max_n (uint64_t n) {
@@ -53,14 +53,14 @@ inline int xy_to_index(int x, int y) {
 
 /**
  * Generates a new interconnection network
- * 
- * We will set up the network to properly use the so-called 'XY' routing 
+ *
+ * We will set up the network to properly use the so-called 'XY' routing
  * algorithm. This is done by laying n many nodes on a square or rectangular
  * grid, and then building the links based on the topology.
- * 
+ *
  * For custom-built interconnection networks we resort to using Valiant
- * routing, lest we use static routing, which is easy to accomplish 
- * with a basic use of DFS/BFS inserted into a lookup table. But for us, 
+ * routing, lest we use static routing, which is easy to accomplish
+ * with a basic use of DFS/BFS inserted into a lookup table. But for us,
  * randomized routing is more than sufficient.
  * We will assume numProc is a perfect square
  */
@@ -120,10 +120,10 @@ ic_network_t *new_network(int numProc, network_type type) {
             }
             break;
         case MESH:
-            // We would have 4 links in middle. Borders have 3. Corners have 2. Ordered as followed: 
-            //   0 
-            // 3 x 1 
-            //   2  
+            // We would have 4 links in middle. Borders have 3. Corners have 2. Ordered as followed:
+            //   0
+            // 3 x 1
+            //   2
             // need to construct a grid for this???
             for (int i = 0; i < numProc; i++) {
                 res->nodes[i].busy = false;
@@ -165,7 +165,7 @@ ic_network_t *new_network(int numProc, network_type type) {
                     link3->busy = false;
                     res->nodes[i].links[3] = link3;
                 }
-                res->nodes[i].num_neighbors = numNeighbors;  
+                res->nodes[i].num_neighbors = numNeighbors;
             }
             break;
         case TORUS:
@@ -205,9 +205,9 @@ ic_network_t *new_network(int numProc, network_type type) {
 }
 
 
-// Route returns the link we choose to use. 
+// Route returns the link we choose to use.
 ic_link_t *route(int start, int dest, ic_network_t *graph) {
-    // This should not exist but just in case       
+    // This should not exist but just in case
     if (start == dest) {
         return NULL;
     }
@@ -251,7 +251,7 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
                 return graph->nodes[start].links[0];
             }
             break;
-        case TORUS: 
+        case TORUS:
             startx = index_to_x(start);
             starty = index_to_y(start);
             destx = index_to_x(dest);
@@ -260,7 +260,7 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
                 return graph->nodes[start].links[2];
             } else {
                 return graph->nodes[start].links[1];
-            } 
+            }
             break;
         default:
             return NULL;
@@ -268,8 +268,8 @@ ic_link_t *route(int start, int dest, ic_network_t *graph) {
 }
 
 void update(ic_network_t *graph) {
-    // Have to load in request from queue. 
-    // Iterate 
+    // Have to load in request from queue.
+    // Iterate
 
     int numNodes = graph->size;
 
@@ -283,14 +283,14 @@ void update(ic_network_t *graph) {
         ic_req *packet = graph->nodes[i].curr_packet;
         if (packet != NULL && graph->nodes[i].busy) {
             // Finds link to go down
-            ic_link_t *next_link = route(i, packet->procNum, graph);
+            ic_link_t *next_link = route(i, packet->destNum, graph);
             if (next_link != NULL) {
                 // candidates[i] = list of links that want send to node i.
                 next_link->busy = true;
                 next_link->curr_packet = packet;
                 int idx = candc[next_link->dest]++;
                 candidates[next_link->dest][idx] = (uintptr_t)next_link;
-                // Move request out of graph to link. Now have to make sure to keep links. 
+                // Move request out of graph to link. Now have to make sure to keep links.
 
             }
         }
