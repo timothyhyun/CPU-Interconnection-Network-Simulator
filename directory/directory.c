@@ -40,6 +40,7 @@ void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // need additional arg in busreq for destination
     if (destNum == sourceNum) {
         coherComp->cacheReq(FETCH, addr, destNum, replyNum);
+
     } else {
         // interconnect request
         inter_sim->busReq(FETCH, addr, destNum, sourceNum, replyNum);
@@ -126,7 +127,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             if (reqType == BUSRD) {
                 // SEND FETCH
                 for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
+                    if (i != procNum && currentState->directory[i] == 1) {
                         // send fetch to process 1 (currently at procNum), reply to rprocNum
                         sendFetch(addr, i, procNum, replyNum);
                         break;
@@ -138,7 +139,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
+                    if (procNum != i && currentState->directory[i] == 1) {
                         currentState->directory[i] = 0;
                         sendFetch(addr, i, procNum, replyNum);
                         sendInvalidate(addr, i, procNum, replyNum);
@@ -152,7 +153,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             if (reqType == BUSRD) {
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
+                    if (i != procNum && currentState->directory[i] == 1) {
                         sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
@@ -161,13 +162,13 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
+                    if (i != procNum && currentState->directory[i] == 1) {
                         sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
                 }
                 for (int i = 0; i < 4; i++) {
-                    if (currentState->directory[i] == 1) {
+                    if (i != procNum && currentState->directory[i] == 1) {
                         currentState->directory[i] = 0;
                         sendInvalidate(addr, i, procNum, replyNum);
                     }

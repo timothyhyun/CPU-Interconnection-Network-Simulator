@@ -121,7 +121,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
     coherence_states currentState = getState(addr, procNum);
     coherence_states nextState;
     cache_action ca;
-    printf("%d cache is processing about %lX and will respond to %d", procNum, addr, replyNum);
+    printf("%d cache is processing about %lX and will respond to %d\n", procNum, addr, replyNum);
     nextState = processCache(reqType, &ca, currentState, addr, procNum, replyNum);
     switch(ca)
     {
