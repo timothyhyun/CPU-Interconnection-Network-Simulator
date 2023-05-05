@@ -83,6 +83,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
                 return INVALID_SHARED;
             }
             // DEST, SOURCE
+            printf("I AM REALLY HERE :)\n");
             sendWr(addr, destNum, procNum);
             return INVALID_MODIFIED;
         case MODIFIED:
@@ -108,6 +109,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
                 *permAvail = 1;
             }
             // DEST SOURCE
+            printf("I AM HERE :)\n");
             sendWr(addr, destNum, procNum);
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
@@ -146,7 +148,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
         case INVALID:
             // Cache does not have. go to memory (out of scope)
             if (reqType == FETCH) {
-                printf("This is a fetch reply");
+                printf("This is a fetch reply\n");
                 sendDataBack(addr, replyNum, procNum);
             }
             printf("processCache exit, %d\n", __LINE__);
