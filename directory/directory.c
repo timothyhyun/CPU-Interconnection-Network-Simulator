@@ -51,8 +51,9 @@ void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
 
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int destNum, int sourceNum, int replyNum){
-    // printf("sendInvalidate enter ");
+    printf("%d sending invalidate to %d for %lX", sourceNum, destNum, addr);
     if (sourceNum == destNum) {
+        printf("over directly\n");
         coherComp->cacheReq(IC_INVALIDATE, addr, destNum, replyNum);
     } else {
         // Interconnect request
@@ -122,7 +123,7 @@ void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextSt
 // procnum: current processor number
 directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int replyNum) {
     // printf("directory call enter ");
-    printf("%d directory is entering for %lX and will reply to %d", procNum, addr, replyNum);
+    printf("%d directory is entering for %lX and will reply to %d\n", procNum, addr, replyNum);
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
         case D_EXCLUSIVE:
