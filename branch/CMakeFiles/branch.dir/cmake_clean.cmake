@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/branch.dir/branch.c.o"
   "CMakeFiles/branch.dir/branch.c.o.d"
-  "libbranch.dylib"
   "libbranch.pdb"
+  "libbranch.so"
 )
 
 # Per-language clean rules from dependency scanning.

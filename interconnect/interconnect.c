@@ -15,6 +15,8 @@ typedef struct _bus_req {
     bus_req_state currentState;
     uint64_t addr;
     int procNum;
+    int rprocNum;
+    int nextProcNum;
     uint8_t shared;
     uint8_t data;
     struct _bus_req *next;
@@ -33,12 +35,12 @@ const int CACHE_TRANSFER = 10;
 const int BUS_TIME = 90;  // TODO - model using a memory component
 
 void registerCoher(coher* cc);
-void busReq(bus_req_type brt, uint64_t addr, int procNum);
+void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum);
 
 interconn* init(inter_sim_args* isa)
 {
     int op;
-    
+
     while ((op = getopt(isa->arg_count, isa->arg_list, "v")) != -1)
     {
         switch (op)
@@ -47,20 +49,20 @@ interconn* init(inter_sim_args* isa)
                 break;
         }
     }
-    
+
     queuedRequests = malloc(sizeof(bus_req*) * processorCount);
     for (int i = 0; i < processorCount; i++)
     {
         queuedRequests[i] = NULL;
     }
-    
+
     self = malloc(sizeof(interconn));
     self->busReq = busReq;
     self->registerCoher = registerCoher;
     self->si.tick = tick;
     self->si.finish = finish;
     self->si.destroy = destroy;
-    
+
     return self;
 }
 
@@ -72,18 +74,24 @@ void registerCoher(coher* cc)
     coherComp = cc;
 }
 
-void busReq(bus_req_type brt, uint64_t addr, int procNum)
+// procNum: destination
+// rprocNum: sender
+// nextProcNum: nextProcNum (if fetch this is the is the processor to reply to)
+
+void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum)
 {
     if (pendingRequest == NULL)
     {
         assert(brt != SHARED);
-        
+
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = WAITING_CACHE;
         nextReq->addr = addr;
         nextReq->procNum = procNum;
-        
+        nextReq->rprocNum = rprocNum;
+        nextReq->nextProcNum = nextProcNum;
+
         pendingRequest = nextReq;
         countDown = CACHE_DELAY;
         return;
@@ -105,19 +113,22 @@ void busReq(bus_req_type brt, uint64_t addr, int procNum)
     {
         assert(brt != SHARED);
         assert(queuedRequests[procNum] == NULL);
-        
+
         bus_req* nextReq = calloc(1, sizeof(bus_req));
         nextReq->brt = brt;
         nextReq->currentState = QUEUED;
         nextReq->addr = addr;
         nextReq->procNum = procNum;
-        
+        nextReq->rprocNum = rprocNum;
+        nextReq->nextProcNum = nextProcNum;
+
         queuedRequests[procNum] = nextReq;
     }
 }
 
 int tick()
 {
+    // printf("ticking IC\n");
     if (countDown > 0)
     {
         assert(pendingRequest != NULL);
@@ -132,7 +143,8 @@ int tick()
                 {
                     if (pendingRequest->procNum != i)
                     {
-                        coherComp->busReq(pendingRequest->brt, pendingRequest->addr, i);
+                        // This is the broadcast I am assuming
+                        coherComp->cacheReq(pendingRequest->brt, pendingRequest->addr, i, pendingRequest->nextProcNum);
                     }
                 }
                 if (pendingRequest->data == 1)
@@ -144,7 +156,7 @@ int tick()
             {
                 bus_req_type brt = DATA;
                 if (pendingRequest->shared == 1) brt = SHARED;
-                coherComp->busReq(brt, pendingRequest->addr, pendingRequest->procNum);
+                coherComp->cacheReq(brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
@@ -152,12 +164,12 @@ int tick()
             {
                 bus_req_type brt = pendingRequest->brt;
                 if (pendingRequest->shared == 1) brt = SHARED;
-                coherComp->busReq(brt, pendingRequest->addr, pendingRequest->procNum);
+                coherComp->cacheReq(brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
                 free(pendingRequest);
                 pendingRequest = NULL;
             }
         }
-        
+
     }
     else if (countDown == 0)
     {
@@ -170,13 +182,13 @@ int tick()
                 queuedRequests[pos] = NULL;
                 countDown = CACHE_DELAY;
                 pendingRequest->currentState = WAITING_CACHE;
-                
+
                 lastProc = (pos + 1) % processorCount;
                 break;
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -188,6 +200,6 @@ int finish(int outFd)
 int destroy(void)
 {
     // TODO
-    
+
     return 0;
 }

@@ -1,0 +1,19 @@
+{
+  "files.associations": {
+    "*.lean4": "lean4",
+    "assert.h": "c",
+    "__locale": "c",
+    "__config": "c",
+    "__debug": "c",
+    "unordered_map": "c",
+    "bit": "c",
+    "bitset": "c",
+    "deque": "c",
+    "map": "c",
+    "*.tcc": "c",
+    "set": "c",
+    "string": "c",
+    "vector": "c",
+    "interconnect_internal.h": "c"
+  }
+}

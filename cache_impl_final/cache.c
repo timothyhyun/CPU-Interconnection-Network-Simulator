@@ -1,5 +1,6 @@
 #include <cache.h>
 #include <trace.h>
+#include <coherence.h>
 #include "cache_internal.h"
 #include <getopt.h>
 #include <stdlib.h>
@@ -33,6 +34,9 @@ parsed_t *cache_parameters = NULL;
 csim_stats *stats = NULL;
 bool use_RRIP = false;
 
+coher* coherComp = NULL;
+
+void coherCallback(int type, int processorNum, int64_t addr);
 void memoryRequest(trace_op *op, int processorNum, int64_t tag, void (*callback)(int64_t));
 
 cache *init(cache_sim_args *csa)
@@ -116,6 +120,80 @@ cache *init(cache_sim_args *csa)
 int64_t pendingTag = 0;
 int countDown = 0;
 void (*memCallback)(int64_t) = NULL;
+
+/**
+ *  With coherence we might now want to keep track of pending memory operations
+ *  as there are rules that must be followed wrt when operations/coherence ops
+ *  can happen and in what order
+ * 
+ *  Linked list of outstanding transactions
+ */
+typedef struct _pendingRequest {
+    int64_t tag;
+    int64_t addr;
+    int type; // perhaps a coherence operation?
+    int processorNum;
+    void(*callback)(int64_t);
+    struct _pendingRequest* next;
+} pendingRequest;
+
+/**
+ *  Not actually sure if this is the correct way to do this. 
+ */
+pendingRequest* readyReq = NULL;
+pendingRequest* pendReq = NULL;
+
+/**
+ * theoretically this should be defined by the coherence component but for now
+ * we will just set this to be a bus coherence callback by default
+ */
+void coherCallback(int type, int processorNum, int64_t addr)
+{
+    assert(pendReq != NULL);
+    assert(processorNum < processorCount);
+    
+    if (pendReq->processorNum == processorNum &&
+        pendReq->addr == addr)
+    {
+        pendingRequest* pr = pendReq;
+        pendReq = pendReq->next;
+        
+        pr->next = readyReq;
+        readyReq = pr;
+    }
+    else
+    {
+        pendingRequest* prevReq = pendReq;
+        pendingRequest* pr = pendReq->next;
+        
+        while (pr != NULL)
+        {
+            if (pr->processorNum == processorNum &&
+                pr->addr == addr)
+            {
+                prevReq->next = pr->next;
+                
+                pr->next = readyReq;
+                readyReq = pr;
+                break;
+            }
+            pr = pr->next;
+            prevReq = prevReq->next;
+        }
+        
+        if (pr == NULL && CADSS_VERBOSE == 1)
+        {
+            pr = pendReq;
+            while (pr != NULL)
+            {
+                printf("W: %p (%lx %d)\t", pr, pr->addr, pr->processorNum);
+                pr = pr->next;
+            }
+            
+        }
+        assert(pr != NULL);
+    }
+}
 
 void lru_update(cline *currline, result op, int def)
 {

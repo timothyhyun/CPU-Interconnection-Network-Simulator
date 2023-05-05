@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/tony/Documents/GitHub/cadss-f22-group3/branch/branch.c" "branch/CMakeFiles/branch.dir/branch.c.o" "gcc" "branch/CMakeFiles/branch.dir/branch.c.o.d"
+  "/afs/andrew.cmu.edu/usr17/tonyy/private/15418/15418-project/branch/branch.c" "branch/CMakeFiles/branch.dir/branch.c.o" "gcc" "branch/CMakeFiles/branch.dir/branch.c.o.d"
   )
 
 # Targets to which this target links.

@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/processor.dir/processor.c.o"
   "CMakeFiles/processor.dir/processor.c.o.d"
-  "libprocessor.dylib"
   "libprocessor.pdb"
+  "libprocessor.so"
 )
 
 # Per-language clean rules from dependency scanning.

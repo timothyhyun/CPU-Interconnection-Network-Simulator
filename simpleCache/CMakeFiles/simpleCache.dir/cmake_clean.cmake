@@ -3,8 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/simpleCache.dir/cache.c.o.d"
   "CMakeFiles/simpleCache.dir/stree.c.o"
   "CMakeFiles/simpleCache.dir/stree.c.o.d"
-  "libsimpleCache.dylib"
   "libsimpleCache.pdb"
+  "libsimpleCache.so"
 )
 
 # Per-language clean rules from dependency scanning.
