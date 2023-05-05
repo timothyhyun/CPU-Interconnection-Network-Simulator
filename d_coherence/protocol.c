@@ -5,25 +5,25 @@
 // NEW PROTOCOLS
 // SEND INVALID
 // CHANGE ARGS TO INCLUDE PROC NUMBER
-// ProcNum: directory NUm (destination)
-// RProcNum: requesting proc
-void sendRd(uint64_t addr, int procNum, int rprocNum) {
+// ProcNum: cache procNUm
+// Dest:DUH 
+void sendRd(uint64_t addr, int procNum, int dest) {
     // If to own directory: place in directory rec queue
     // else place in inter->busReq
     if (procNum == rprocNum) {
         // Go to directory
-        direct_sim->directoryReq(BUSRD, addr, procNum, rprocNum);
+        direct_sim->directoryReq(BUSRD, addr, dest, procNum);
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
-        inter_sim->busReq(BUSRD, addr, procNum, rprocNum, -1);
+        inter_sim->busReq(BUSRD, addr, dest, procNum, -1);
     }
 }
 
-void sendWr(uint64_t addr, int procNum, int rprocNum) {
+void sendWr(uint64_t addr, int procNum, int dest) {
     if (procNum == rprocNum) {
-        direct_sim->directoryReq(BUSWR, addr, procNum, rprocNum);
+        direct_sim->directoryReq(BUSWR, addr, dest, procNum);
     } else {
-        inter_sim->busReq(BUSWR, addr, procNum, rprocNum, -1);
+        inter_sim->busReq(BUSWR, addr, dest, procNum, -1);
     }
 
 }
@@ -140,7 +140,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
         case MODIFIED:
             if (reqType = FETCH)
             {
-                sendDataBack(addr, procNum, rprocNum);
+                sendDataBack(addr, rprocNum, procNum);
                 printf("processCache exit\n");
                 return SHARED_STATE;
             }
@@ -154,7 +154,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
         case SHARED_STATE:
             if (reqType = FETCH)
             {
-                sendDataBack(addr, procNum, rprocNum);
+                sendDataBack(addr, rprocNum, procNum);
                 printf("processCache exit\n");
                 return SHARED_STATE;
             }
