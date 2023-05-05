@@ -8,7 +8,7 @@ typedef struct _directory_req {
     int procNum;
     // When directed to directory, this is the originating processor.
     // When directed to cache, this is the procNum to send data to.
-    int rprocNum;
+    int replyNum;
     struct _directory_req *next;
 } directory_req;
 
@@ -35,34 +35,34 @@ int countDown = 0;
 
 // send from directory to cache
 // directoryNum sending fetch request to procNum which will send data back to rprocNum
-void sendFetch(uint64_t addr, int procNum, int directoryNum, int rprocNum) {
+void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
     if (procNum == directoryNum) {
-        coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
+        coherComp->cacheReq(FETCH, addr, destNum, replyNum);
     } else {
         // interconnect request
-        inter_sim->busReq(FETCH, addr, procNum, directoryNum, rprocNum);
+        inter_sim->busReq(FETCH, addr, destNum, sourceNum, replyNum);
     }
     // printf("sendFetch exit\n");
 }
 
 // directoryNum sending invalidate to procNum
-void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
+void sendInvalidate(uint64_t addr, int destNum, int sourceNum, int replyNum){
     // printf("sendInvalidate enter ");
     if (procNum == directoryNum) {
-        coherComp->cacheReq(IC_INVALIDATE, addr, procNum, -1);
+        coherComp->cacheReq(IC_INVALIDATE, addr, destNum, replyNum);
     } else {
         // Interconnect request
         // No reply needed
-        inter_sim->busReq(IC_INVALIDATE, addr, procNum, directoryNum, -1);
+        inter_sim->busReq(IC_INVALIDATE, addr, destNum, sourceNum, replyNum);
     }
     // printf("sendInvalidate exit\n");
 }
 
 
 
-void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum);
+void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum);
 void registerCoher(coher *cc);
 
 direc* init(direc_sim_args* dsa)
@@ -118,7 +118,7 @@ void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextSt
 
 // rprocnum: originating processor
 // procnum: current processor number
-directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum) {
+directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int replyNum) {
     // printf("directory call enter ");
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
@@ -128,7 +128,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 for (int i = 0; i < 4; i++) {
                     if (currentState->directory[i] == 1) {
                         // send fetch to process 1 (currently at procNum), reply to rprocNum
-                        sendFetch(addr, i, procNum, rprocNum);
+                        sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
                 }
@@ -140,8 +140,8 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 for (int i = 0; i < 4; i++) {
                     if (currentState->directory[i] == 1) {
                         currentState->directory[i] = 0;
-                        sendFetch(addr, i, procNum, rprocNum);
-                        sendInvalidate(addr, procNum, i);
+                        sendFetch(addr, i, procNum, replyNum);
+                        sendInvalidate(addr, i, procNum, replyNum);
                         break;
                     }
                 }
@@ -153,7 +153,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
                     if (currentState->directory[i] == 1) {
-                        sendFetch(addr, i, procNum, rprocNum);
+                        sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
                 }
@@ -162,14 +162,14 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
                     if (currentState->directory[i] == 1) {
-                        sendFetch(addr, i, procNum, rprocNum);
+                        sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
                 }
                 for (int i = 0; i < 4; i++) {
                     if (currentState->directory[i] == 1) {
                         currentState->directory[i] = 0;
-                        sendInvalidate(addr, procNum, i);
+                        sendInvalidate(addr, i, procNum, replyNum);
                     }
                 }
                 currentState->directory[procNum] = 1;
@@ -178,7 +178,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             break;
         case D_INVALID:
             currentState->directory[procNum] = 1;
-            coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
+            coherComp->cacheReq(FETCH, addr, procNum, replyNum);
             // add to cache recieving queue - Fetch?
             if (reqType == BUSRD) {
                 // SEND DATA TO ASKING PROC
@@ -209,7 +209,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
 
 // Takes requests from interconnect and cache controller and places them in queue
 // all go to directory
-void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum)
+void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 {
     //printf("directory req enter ");
     // Add to pending Queue
@@ -218,10 +218,10 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
         nextReq->brt = reqType;
         nextReq->addr = addr;
         nextReq->procNum = procNum;
-        nextReq->rprocNum = rprocNum;
+        nextReq->replyNum = replyNum;
         pendingRequest = nextReq;
         countDown = CONTROLLER_DELAY;
-        directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
+        directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->replyNum);
         free(pendingRequest);
         pendingRequest = NULL;
         // printf("directory req exit\n");

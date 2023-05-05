@@ -10,7 +10,7 @@ typedef struct _cache_req {
     bus_req_type brt;
     uint64_t addr;
     int procNum;
-    int nextProcNum;
+    int replyNum;
     struct _cache_req *next;
 } cache_req;
 
@@ -35,12 +35,12 @@ direc* direct_sim = NULL;
 typedef void(*cacheCallbackFunc)(int, int, int64_t);
 cacheCallbackFunc cacheCallback = NULL;
 
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum);
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum);
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum);
 
 // processorNum: current processor num
 // nextProcessorNum: # to reply to
-void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum);
+void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum);
 void registerCacheInterface(void(*callback)(int, int, int64_t));
 void registerCacheParameters(int s, int b);
 
@@ -84,7 +84,6 @@ coher* init(coher_sim_args* csa)
     return self;
 }
 
-int countDown = 0;
 
 void registerCacheInterface(void(*callback)(int, int, int64_t))
 {
@@ -112,24 +111,24 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
 
 // processorNum is dest proc
 // Do I need to add origin processor? Or else how do I send data back????
-uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum)
+uint8_t busReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 {
     printf("enter busReq ");
-    if (processorNum < 0 || processorNum >= processorCount)
+    if (procNum < 0 || procNum >= processorCount)
     {
         // ERROR
     }
 
-    coherence_states currentState = getState(addr, processorNum);
+    coherence_states currentState = getState(addr, procNum);
     coherence_states nextState;
     cache_action ca;
 
-    nextState = processCache(reqType, &ca, currentState, addr, processorNum,rprocessorNum);
+    nextState = processCache(reqType, &ca, currentState, addr, procNum, replyNum);
     switch(ca)
     {
         case DATA_RECV:
             // callback to cache that request is complete
-            cacheCallback(0, processorNum, addr);
+            cacheCallback(0, procNum, addr);
             break;
         case INVALIDATE:
             // callback to cache that line has been invalidated
@@ -146,12 +145,12 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
     {
         if (currentState != INVALID)
         {
-            tree_remove(coherStates[processorNum], addr);
+            tree_remove(coherStates[procNum], addr);
         }
     }
     else
     {
-        setState(addr, processorNum, nextState);
+        setState(addr, procNum, nextState);
     }
 
     printf("Finished recieve cache request\n");
@@ -184,38 +183,38 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 // Takes request from interconnect and directory and places them in queue
 // all go to processCache
 // rproc: processorNum that sent request
-void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextProcessorNum)
+void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 {
     // Add to pending Queue
 
 
-    printf("Recieving request from interconnect\n");
-    if (pendingRequest == NULL) {
+    // printf("Recieving request from interconnect\n");
+    // if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));
         nextReq->brt = reqType;
         nextReq->addr = addr;
-        nextReq->procNum = processorNum;
-        nextReq->nextProcNum = nextProcessorNum;
+        nextReq->procNum = procNum;
+        nextReq->replyNum = replyNum;
         pendingRequest = nextReq;
-        countDown = CONTROLLER_DELAY;
-    } else {
-        cache_req* nextReq = calloc(1, sizeof(cache_req));
-        nextReq->brt = reqType;
-        nextReq->addr = addr;
-        nextReq->procNum = processorNum;
-        nextReq->nextProcNum = nextProcessorNum;
-        queuedRequests = nextReq;
-    }
+    //     countDown = CONTROLLER_DELAY;
+    // } else {
+    //     cache_req* nextReq = calloc(1, sizeof(cache_req));
+    //     nextReq->brt = reqType;
+    //     nextReq->addr = addr;
+    //     nextReq->procNum = processorNum;
+    //     nextReq->nextProcNum = nextProcessorNum;
+    //     queuedRequests = nextReq;
+    // }
 
 
     if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
-        direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+        direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->replyNum);
     // Is either fetch, invalidate, or data
     } else {
         printf("HERE PLEASE YOU BITCH");
-        busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
+        busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->replyNum);
     }
-    free(pendingRequest);
+    free(nextReq);
     pendingRequest = NULL;
 
     printf("cacheReq exit\n");

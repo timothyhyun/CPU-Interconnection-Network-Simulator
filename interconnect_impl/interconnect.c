@@ -24,7 +24,7 @@ const int CACHE_TRANSFER = 10;
 const int BUS_TIME = 90;  // TODO - model using a memory component
 
 void registerCoher(coher* cc);
-void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum);
+void busReq(bus_req_type brt, uint64_t addr, int destNum, int sourceNum, int replyNum);
 
 ic_network_t *network = NULL;
 network_type nt = TORUS;
@@ -68,29 +68,26 @@ void registerCoher(coher* cc)
     coherComp = cc;
 }
 
-// procNum: destination
-// rprocNum: sender
-// nextProcNum: nextProcNum (if fetch this is the is the processor to reply to)
-
+// DEST SOURCE REPLY
 /**
  * In a generalized interconnect, busReq will just queue up a request. At each
  * tick of the interconnect, we just deq a rqeuest and place it in the endpoint
  * of procNum.
  *
  */
-void busReq(bus_req_type brt, uint64_t addr, int procNum, int rprocNum, int nextProcNum)
+void busReq(bus_req_type brt, uint64_t addr, int destNum, int sourceNum, int replyNum)
 {
     assert(procNum >= 0);
     ic_req* nextReq = calloc(1, sizeof(ic_req));
     nextReq->brt = brt;
     nextReq->currentState = QUEUED;
     nextReq->addr = addr;
-    nextReq->procNum = procNum;
-    nextReq->rprocNum = rprocNum;
-    nextReq->nextProcNum = nextProcNum;
-    pending[rprocNum]->countDown = INTER_DELAY;
+    nextReq->destNum = destNum;
+    nextReq->sourceNum = sourceNum;
+    nextReq->replyNum = replyNum;
+    pending[sourceNum]->countDown = INTER_DELAY;
 
-    enq(pending[procNum], (void *)nextReq);
+    enq(pending[sourceNum], (void *)nextReq);
 }
 
 int tick()
@@ -113,9 +110,9 @@ int tick()
 
     for (int i = 0; i < network->size; i++) {
         ic_req *curr_packet = network->nodes[i].curr_packet;
-        if (curr_packet != NULL && curr_packet->procNum == i) {
+        if (curr_packet != NULL && curr_packet->destNum == i) {
             // Send to Cache
-            coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->procNum, curr_packet->nextProcNum);
+            coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->destNum, curr_packet->replyNum);
         }
     }
 

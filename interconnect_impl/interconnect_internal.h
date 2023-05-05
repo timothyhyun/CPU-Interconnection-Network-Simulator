@@ -34,9 +34,9 @@ typedef struct _ic_req {
     bus_req_type brt;
     ic_req_state currentState;
     uint64_t addr;
-    int procNum;
-    int rprocNum;
-    int nextProcNum;
+    int destNum;
+    int sourceNum;
+    int replyNum;
     uint8_t shared;
     uint8_t data;
 } ic_req;

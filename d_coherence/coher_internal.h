@@ -43,7 +43,7 @@ typedef enum _cache_action {
 
 // Change Cache State then Send to Directory or Interconnect
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum);
-coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum, int rprocNum);
+coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum, int replyNum);
 
 int findHomeProcessor(uint64_t addr, int procNum);
 
