@@ -10,26 +10,33 @@
 void sendRd(uint64_t addr, int destNum, int sourceNum) {
     // If to own directory: place in directory rec queue
     // else place in inter->busReq
+    printf("%d sourceNum sending read %lX to %d over", sourceNum, addr, destNum);
     if (sourceNum == destNum) {
         // Go to directory
+        printf("directly\n");
         direct_sim->directoryReq(BUSRD, addr, destNum, sourceNum);
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
+        printf("interconnect\n");
         inter_sim->busReq(BUSRD, addr, destNum, sourceNum, sourceNum);
     }
 }
 
 void sendWr(uint64_t addr, int destNum, int sourceNum) {
+    printf("%d sourceNum sending write %lX to %d over", sourceNum, addr, destNum);
+
     if (sourceNum == destNum) {
+        printf("directly\n");
         direct_sim->directoryReq(BUSWR, addr, destNum, sourceNum);
     } else {
+        printf("interconnect\n");
         inter_sim->busReq(BUSWR, addr, destNum, sourceNum, sourceNum);
     }
 
 }
 
-void sendDataBack(uint64_t addr, int destNum, int sourceNum) {
-    // Cache to Cache
+void sendDataBack(uint64_t addr, int destNum, int sourceNum) {   
+    printf("%d is sending to %d about %lX\n", sourceNum, destNum, addr); 
     inter_sim->busReq(DATA, addr, destNum, sourceNum, sourceNum);
 }
 
@@ -55,7 +62,7 @@ int findHomeProcessor(uint64_t addr, int procNum) {
 }
 
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {
-    printf("cacheDirectory enter ");
+    printf("%d recieves request on %lX\n", procNum, addr);
     int destNum = findHomeProcessor(addr, procNum);
     switch(currentState)
     {
@@ -70,19 +77,16 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             {
                 // DEST, SOURCE
                 sendRd(addr, destNum, procNum);
-                printf("cacheDirectory exit\n");
                 return INVALID_SHARED;
             }
             // DEST, SOURCE
             sendWr(addr, destNum, procNum);
-            printf("cacheDirectory exit\n");
             return INVALID_MODIFIED;
         case MODIFIED:
         /*
         NOTHING
         */
             *permAvail = 1;
-            printf("cacheDirectory exit\n");
             return MODIFIED;
         case SHARED_STATE:
         /*
@@ -94,13 +98,11 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             if (is_read)
             {
                 *permAvail = 1;
-                printf("cacheDirectory exit\n");
                 return SHARED_STATE;
             }
             *permAvail = 0;
             // DEST SOURCE
             sendWr(addr, destNum, procNum);
-            printf("cacheDirectory exit\n");
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
             fprintf(stderr, "IM state on %lx, but request %d\n", addr, is_read);
@@ -132,16 +134,15 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
 // Invalidates
 // Fetch
 coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum, int replyNum) {
-    printf("processCache enter ");
     *ca = NO_ACTION;
     switch(currentState)
     {
         case INVALID:
             // Cache does not have. go to memory (out of scope)
             if (reqType == FETCH) {
-                printf("processCache exit, %d\n", __LINE__);
                 sendDataBack(addr, replyNum, procNum);
             }
+            printf("processCache exit, %d\n", __LINE__);
             return INVALID;
         case MODIFIED:
             if (reqType = FETCH)

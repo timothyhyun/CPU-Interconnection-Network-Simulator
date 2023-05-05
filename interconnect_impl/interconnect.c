@@ -77,6 +77,7 @@ void registerCoher(coher* cc)
  */
 void busReq(bus_req_type brt, uint64_t addr, int destNum, int sourceNum, int replyNum)
 {
+    printf("Interconnect recieves request for %lX from %d to %d and replies %d\n", addr, sourceNum, destNum, replyNum);
     assert(procNum >= 0);
     ic_req* nextReq = calloc(1, sizeof(ic_req));
     nextReq->brt = brt;
@@ -112,6 +113,7 @@ int tick()
         ic_req *curr_packet = network->nodes[i].curr_packet;
         if (curr_packet != NULL && curr_packet->destNum == i) {
             // Send to Cache
+            printf("%lX has been sent to %d from %d and will reply to %d\n", curr_packet->addr, curr_packet->destNum, curr_packet->sourceNum, curr_packet->replyNum);
             coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->destNum, curr_packet->replyNum);
         }
     }
