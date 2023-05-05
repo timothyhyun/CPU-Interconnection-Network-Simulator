@@ -27,7 +27,7 @@ void registerCoher(coher* cc);
 void busReq(bus_req_type brt, uint64_t addr, int destNum, int sourceNum, int replyNum);
 
 ic_network_t *network = NULL;
-network_type nt = TORUS;
+network_type nt = CROSSBAR;
 
 interconn* init(inter_sim_args* isa)
 {
@@ -96,10 +96,11 @@ int tick()
     for (int i = 0; i < processorCount; i++) {
         if (pending[i]->countDown > 0) {
             pending[i]->countDown--;
-            if (pending[i]->countDown == 0) {
+            if (pending[i]->countDown == 0 && !network->nodes[i].busy) {
                 ic_req *temp = (ic_req*) dq(pending[i]);
                 if (temp != NULL) {
                     network->nodes[i].curr_packet = temp;
+                    network->nodes[i].busy = true;
                     pending[i]->countDown = INTER_DELAY;
                 }
             }
@@ -115,10 +116,12 @@ int tick()
             // Send to Cache
             printf("%lX has been sent to %d from %d and will reply to %d\n", curr_packet->addr, curr_packet->destNum, curr_packet->sourceNum, curr_packet->replyNum);
             coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->destNum, curr_packet->replyNum);
+            network->nodes[i].curr_packet = NULL;
+            network->nodes[i].busy = false;
         }
     }
 
-    return 1;
+    return 0;
 }
 
 int finish(int outFd)

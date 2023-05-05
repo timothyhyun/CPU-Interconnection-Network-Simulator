@@ -172,6 +172,16 @@ int tick()
     // printf("ticking cache\n");
     coherComp->si.tick();
 
+    // DEBUGGING
+    pendingRequest *curr = pendReq;
+    int count = 0;
+    while(curr != NULL) {
+        printf("Waiting on ADDR %lx\n", curr->addr);
+        count++;
+        curr = curr->next;
+    }
+    printf("Waiting on %d operations\n", count);
+
     pendingRequest* pr = readyReq;
     while (pr != NULL)
     {

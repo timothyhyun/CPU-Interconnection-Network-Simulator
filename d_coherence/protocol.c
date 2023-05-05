@@ -109,6 +109,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             *permAvail = 0;
             if (destNum == procNum) {
                 *permAvail = 1;
+                return MODIFIED;
             }
             // DEST SOURCE
             sendWr(addr, destNum, procNum);

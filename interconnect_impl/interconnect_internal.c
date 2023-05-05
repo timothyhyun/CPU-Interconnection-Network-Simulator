@@ -283,15 +283,16 @@ void update(ic_network_t *graph) {
         ic_req *packet = graph->nodes[i].curr_packet;
         if (packet != NULL && graph->nodes[i].busy) {
             // Finds link to go down
+            printf("Node %d has a packet, routed to %d!\n", i, packet->destNum);
             ic_link_t *next_link = route(i, packet->destNum, graph);
             if (next_link != NULL) {
+                printf("Node %d wants to go %d\n", i, next_link->dest);
                 // candidates[i] = list of links that want send to node i.
                 next_link->busy = true;
                 next_link->curr_packet = packet;
                 int idx = candc[next_link->dest]++;
                 candidates[next_link->dest][idx] = (uintptr_t)next_link;
                 // Move request out of graph to link. Now have to make sure to keep links.
-
             }
         }
     }
@@ -299,6 +300,7 @@ void update(ic_network_t *graph) {
     for (int i = 0; i < numNodes; i++) {
         // pick a winner for each node
         int count = candc[i];
+        printf("Node %d has %d candidates\n", i, count);
         if (count > 0 && graph->nodes[i].curr_packet == NULL && !graph->nodes[i].busy) {
             int winner = (int)rand_max_n((uint64_t)count);
             ic_link_t *link = candidates[i][winner];
@@ -308,8 +310,7 @@ void update(ic_network_t *graph) {
             graph->nodes[link->start].busy = false;
             link->curr_packet = NULL;
             link->busy = false;
-            printf("Moving a packet\n");
-
+            printf("Moving a packet from candidate %d to %d\n", link->start, i);
         }
     }
     free(candc);
