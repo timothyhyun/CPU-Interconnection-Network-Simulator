@@ -308,6 +308,8 @@ void update(ic_network_t *graph) {
             graph->nodes[link->start].busy = false;
             link->curr_packet = NULL;
             link->busy = false;
+            printf("Moving a packet\n");
+
         }
     }
     free(candc);
