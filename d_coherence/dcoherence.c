@@ -212,6 +212,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
         direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
     // Is either fetch, invalidate, or data
     } else {
+        printf("HERE PLEASE YOU BITCH");
         busReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->nextProcNum);
     }
     free(pendingRequest);
