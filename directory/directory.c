@@ -38,6 +38,7 @@ int countDown = 0;
 void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
+    printf("%d sending fetch to %d about %lX and will reply to", sourceNum, destNum, addr, replyNum);
     if (destNum == sourceNum) {
         coherComp->cacheReq(FETCH, addr, destNum, replyNum);
 
@@ -121,6 +122,7 @@ void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextSt
 // procnum: current processor number
 directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int replyNum) {
     // printf("directory call enter ");
+    printf("%d directory is entering for %lX and will reply to %d", procNum, addr, replyNum);
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
         case D_EXCLUSIVE:
