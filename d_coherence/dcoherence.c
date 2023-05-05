@@ -185,7 +185,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 {
     // Add to pending Queue
 
-    printf("%d recieves request about %lX and will reply to %d\n", procNum, addr, replyNum);
+    printf("%d recieves request in cacheReq about %lX and will reply to %d\n", procNum, addr, replyNum);
     // printf("Recieving request from interconnect\n");
     // if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));

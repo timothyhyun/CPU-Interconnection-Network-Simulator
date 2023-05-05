@@ -146,6 +146,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
         case INVALID:
             // Cache does not have. go to memory (out of scope)
             if (reqType == FETCH) {
+                printf("This is a fetch reply");
                 sendDataBack(addr, replyNum, procNum);
             }
             printf("processCache exit, %d\n", __LINE__);
