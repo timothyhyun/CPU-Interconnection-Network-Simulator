@@ -174,10 +174,10 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
     setState(addr, processorNum, nextState);
     if (getState(addr, processorNum) == INVALID) {
-        printf("I should not be here");
+        printf("I should not be here\n");
     }
     if (getState(addr, processorNum) == INVALID_MODIFIED) {
-        printf("I should be here");
+        printf("I should be here\n");
     }
     return permAvail;
 }
