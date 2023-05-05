@@ -138,8 +138,10 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
     {
         case INVALID:
             // Cache does not have. go to memory (out of scope)
-            printf("processCache exit, %d\n", __LINE__);
-            sendDataBack(addr, replyNum, procNum);
+            if (reqType == FETCH) {
+                printf("processCache exit, %d\n", __LINE__);
+                sendDataBack(addr, replyNum, procNum);
+            }
             return INVALID;
         case MODIFIED:
             if (reqType = FETCH)
@@ -148,7 +150,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
                 printf("processCache exit\n");
                 return SHARED_STATE;
             }
-            else if (reqType = INVALIDATE) {
+            else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
                 printf("processCache exit\n");
                 return INVALID;
@@ -162,7 +164,7 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
                 printf("processCache exit\n");
                 return SHARED_STATE;
             }
-            else if (reqType = INVALIDATE) {
+            else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
                 printf("processCache exit\n");
                 return INVALID;
