@@ -77,7 +77,7 @@ void registerCoher(coher* cc)
  */
 void busReq(bus_req_type brt, uint64_t addr, int destNum, int sourceNum, int replyNum)
 {
-    printf("Interconnect recieves request for %lX from %d to %d and replies %d\n", addr, sourceNum, destNum, replyNum);
+    // printf("Interconnect recieves request for %lX from %d to %d and replies %d\n", addr, sourceNum, destNum, replyNum);
     assert(procNum >= 0);
     ic_req* nextReq = calloc(1, sizeof(ic_req));
     nextReq->brt = brt;
@@ -99,13 +99,15 @@ int tick()
             if (pending[i]->countDown == 0 && !network->nodes[i].busy) {
                 ic_req *temp = (ic_req*) dq(pending[i]);
                 if (temp != NULL) {
+                    // printf("Node %d loads a packet (ADDR %lX) from queue\n", i, temp->addr);
                     network->nodes[i].curr_packet = temp;
                     network->nodes[i].busy = true;
                     pending[i]->countDown = INTER_DELAY;
                 }
             }
+            assert(network->nodes[i].busy && network->nodes[i].curr_packet != NULL);
         }
-
+        // printf("Node %d waiting for %d ticks\n", i, pending[i]->countDown);
     }
 
     update(network);
@@ -114,7 +116,7 @@ int tick()
         ic_req *curr_packet = network->nodes[i].curr_packet;
         if (curr_packet != NULL && curr_packet->destNum == i) {
             // Send to Cache
-            printf("%lX has been sent to %d from %d and will reply to %d\n", curr_packet->addr, curr_packet->destNum, curr_packet->sourceNum, curr_packet->replyNum);
+            // printf("%lX has been sent to %d from %d and will reply to %d\n", curr_packet->addr, curr_packet->destNum, curr_packet->sourceNum, curr_packet->replyNum);
             coherComp->cacheReq(curr_packet->brt, curr_packet->addr, curr_packet->destNum, curr_packet->replyNum);
             network->nodes[i].curr_packet = NULL;
             network->nodes[i].busy = false;

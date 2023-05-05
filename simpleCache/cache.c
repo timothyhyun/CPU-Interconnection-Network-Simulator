@@ -49,7 +49,7 @@ cache* init(cache_sim_args* csa)
 
             // block size in bits
             case 'b':
-                coherComp->registerCacheParameters(0, optarg);
+                coherComp->registerCacheParameters(0, atoi(optarg));
                 blockSize = 0x1 << atoi(optarg);
                 break;
 
@@ -93,7 +93,7 @@ void coherCallback(int type, int processorNum, int64_t addr)
 {
     assert(pendReq != NULL);
     assert(processorNum < processorCount);
-
+    // printf("Callback called on ADDR %lX\n", addr);
     if (pendReq->processorNum == processorNum &&
         pendReq->addr == addr)
     {
@@ -141,7 +141,7 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
 {
     assert(op != NULL);
     assert(callback != NULL);
-    printf("enter memReq ");
+    // printf("enter memReq ");
     // As a simplifying assumption, requests do not cross cache lines
     uint64_t addr = (op->memAddress & ~(blockSize - 1));
     uint8_t perm = coherComp->permReq((op->op == MEM_LOAD), addr, processorNum);
@@ -157,6 +157,7 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
         // create callback for next tick
         pr->next = readyReq;
         readyReq = pr;
+        // printf("readyReq ADDR %lX\n", readyReq->addr);
     }
     else
     {
@@ -164,7 +165,7 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
         pr->next = pendReq;
         pendReq = pr;
     }
-    printf("exit memReq\n");
+    // printf("exit memReq\n");
 }
 
 int tick()
@@ -175,14 +176,17 @@ int tick()
     // DEBUGGING
     pendingRequest *curr = pendReq;
     int count = 0;
+    /*
     while(curr != NULL) {
         printf("Waiting on ADDR %lx\n", curr->addr);
         count++;
         curr = curr->next;
     }
-    printf("Waiting on %d operations\n", count);
+    */
+    // printf("Waiting on %d operations\n", count);
 
     pendingRequest* pr = readyReq;
+    // printf("pr = %p\n", (void *)pr);
     while (pr != NULL)
     {
         pendingRequest* t = pr;

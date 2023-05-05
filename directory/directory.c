@@ -38,7 +38,7 @@ int countDown = 0;
 void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
-    printf("%d sending fetch to %d about %lX and will reply to\n", sourceNum, destNum, addr, replyNum);
+    // printf("%d sending fetch to %d about %lX and will reply to\n", sourceNum, destNum, addr, replyNum);
     if (destNum == sourceNum) {
         coherComp->cacheReq(FETCH, addr, destNum, replyNum);
 
@@ -51,9 +51,9 @@ void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
 
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int destNum, int sourceNum, int replyNum){
-    printf("%d sending invalidate to %d for %lX\n", sourceNum, destNum, addr);
+    // printf("%d sending invalidate to %d for %lX\n", sourceNum, destNum, addr);
     if (sourceNum == destNum) {
-        printf("over directly\n");
+        // printf("over directly\n");
         coherComp->cacheReq(IC_INVALIDATE, addr, destNum, replyNum);
     } else {
         // Interconnect request
@@ -123,14 +123,15 @@ void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextSt
 // procnum: current processor number
 directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int replyNum) {
     // printf("directory call enter ");
-    printf("%d directory is entering for %lX and will reply to %d\n", procNum, addr, replyNum);
+    // printf("%d directory is entering for %lX and will reply to %d\n", procNum, addr, replyNum);
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
         case D_EXCLUSIVE:
+            // printf("%d directory entering exclusive case\n", procNum);
             if (reqType == BUSRD) {
                 // SEND FETCH
                 for (int i = 0; i < 4; i++) {
-                    if (i != procNum && currentState->directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
                         // send fetch to process 1 (currently at procNum), reply to rprocNum
                         sendFetch(addr, i, procNum, replyNum);
                         break;
@@ -142,7 +143,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (procNum != i && currentState->directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
                         currentState->directory[i] = 0;
                         sendFetch(addr, i, procNum, replyNum);
                         sendInvalidate(addr, i, procNum, replyNum);
@@ -153,10 +154,12 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             }
             break;
         case D_SHARED:
+            // printf("%d directory entering shared case\n", procNum);
             if (reqType == BUSRD) {
                 // SEND READ
                 for (int i = 0; i < 4; i++) {
-                    if (i != procNum && currentState->directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
+                        // printf("Sending fetch from %d to %d\n", procNum, replyNum);
                         sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
@@ -165,13 +168,15 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             } else {
                 // SEND Invalidates to everybody
                 for (int i = 0; i < 4; i++) {
-                    if (i != procNum && currentState->directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
+                        // printf("Sending fetch from %d to %d\n", procNum, replyNum);
                         sendFetch(addr, i, procNum, replyNum);
                         break;
                     }
                 }
                 for (int i = 0; i < 4; i++) {
-                    if (i != procNum && currentState->directory[i] == 1) {
+                    if (currentState->directory[i] == 1) {
+                        // printf("Sending invalidate from %d to %d\n", procNum, replyNum);
                         currentState->directory[i] = 0;
                         sendInvalidate(addr, i, procNum, replyNum);
                     }
@@ -181,6 +186,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             }
             break;
         case D_INVALID:
+            // printf("%d directory entering invalid case\n", procNum);
             currentState->directory[procNum] = 1;
             coherComp->cacheReq(FETCH, addr, procNum, replyNum);
             // add to cache recieving queue - Fetch?
@@ -208,7 +214,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
     }
     setDirectoryState(addr, procNum, currentState);
 
-    printf("directory call exit\n");
+    // printf("directory call exit\n");
 }
 
 

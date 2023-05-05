@@ -92,6 +92,7 @@ void registerCacheInterface(void(*callback)(int, int, int64_t))
 
 void registerCacheParameters(int s, int b) {
     cache_b = b;
+    // printf("Registered cache_b %d\n", cache_b);
     cache_s = s;
 }
 
@@ -152,7 +153,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
         setState(addr, procNum, nextState);
     }
 
-    printf("Finished recieve cache request\n");
+    // printf("Finished recieve cache request\n");
     return 0;
 }
 
@@ -162,7 +163,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 {
-    printf("%d recieving request on %lX\n", processorNum, addr);
+    // printf("%d recieving request on %lX\n", processorNum, addr);
     if (processorNum < 0 || processorNum >= processorCount)
     {
         // ERROR
@@ -184,7 +185,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 {
     // Add to pending Queue
 
-    printf("%d recieves request in cacheReq about %lX and will reply to %d\n", procNum, addr, replyNum);
+    // printf("%d recieves request in cacheReq about %lX and will reply to %d\n", procNum, addr, replyNum);
     // printf("Recieving request from interconnect\n");
     // if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));
@@ -205,7 +206,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
 
 
     if (pendingRequest->brt == BUSRD || pendingRequest->brt == BUSWR) {
-        printf("%d is forwarding to directory about %lX and will reply to %d\n", procNum, addr, replyNum);
+        // printf("%d is forwarding to directory about %lX and will reply to %d\n", procNum, addr, replyNum);
         direct_sim->directoryReq(pendingRequest->brt, pendingRequest->addr, pendingRequest->procNum, pendingRequest->replyNum);
     // Is either fetch, invalidate, or data
     } else {
@@ -214,7 +215,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int procNum, int replyNum)
     free(nextReq);
     pendingRequest = NULL;
 
-    printf("cacheReq exit\n");
+    // printf("cacheReq exit\n");
 }
 
 

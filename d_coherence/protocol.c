@@ -10,33 +10,33 @@
 void sendRd(uint64_t addr, int destNum, int sourceNum) {
     // If to own directory: place in directory rec queue
     // else place in inter->busReq
-    printf("%d sourceNum sending read %lX to %d over", sourceNum, addr, destNum);
+    // printf("%d sourceNum sending read %lX to %d over", sourceNum, addr, destNum);
     if (sourceNum == destNum) {
         // Go to directory
-        printf("directly\n");
+        // printf("directly\n");
         direct_sim->directoryReq(BUSRD, addr, destNum, sourceNum);
     } else {
         // INTERCONNECT NEED NEW FUNCTION TONY THIS IS JUST A PLACEHOLDER
-        printf("interconnect\n");
+        // printf("interconnect\n");
         inter_sim->busReq(BUSRD, addr, destNum, sourceNum, sourceNum);
     }
 }
 
 void sendWr(uint64_t addr, int destNum, int sourceNum) {
-    printf("%d sourceNum sending write %lX to %d over", sourceNum, addr, destNum);
+    // printf("%d sourceNum sending write %lX to %d over", sourceNum, addr, destNum);
 
     if (sourceNum == destNum) {
-        printf("directly\n");
+        // printf("directly\n");
         direct_sim->directoryReq(BUSWR, addr, destNum, sourceNum);
     } else {
-        printf("interconnect\n");
+        // printf("interconnect\n");
         inter_sim->busReq(BUSWR, addr, destNum, sourceNum, sourceNum);
     }
 
 }
 
 void sendDataBack(uint64_t addr, int destNum, int sourceNum) {
-    printf("%d is sending data back to %d about %lX\n", sourceNum, destNum, addr);
+    // printf("%d is sending data back to %d about %lX\n", sourceNum, destNum, addr);
     inter_sim->busReq(DATA, addr, destNum, sourceNum, sourceNum);
 }
 
@@ -58,11 +58,12 @@ int findHomeProcessor(uint64_t addr, int procNum) {
     int k = mylog(processorCount);
     size_t tag = addr >> (cache_s + cache_b);
     long mask = bitMask(k - 1, 0);
+    // printf("Home processor: %d\n", mask & tag);
     return mask & tag;
 }
 
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {
-    printf("%d recieves request on %lX\n", procNum, addr);
+    // printf("%d recieves request on %lX\n", procNum, addr);
     int destNum = findHomeProcessor(addr, procNum);
     switch(currentState)
     {
@@ -75,24 +76,29 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             *permAvail = 0;
             if (destNum == procNum && is_read) {
                 *permAvail = 1;
+                // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
                 return SHARED_STATE;
             } else if (destNum == procNum && !is_read){
                 *permAvail = 1;
+                // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
                 return MODIFIED;
             }
             if (is_read) {
                 // DEST, SOURCE
                 sendRd(addr, destNum, procNum);
+                // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
                 return INVALID_SHARED;
             }
             // DEST, SOURCE
             sendWr(addr, destNum, procNum);
+            // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
             return INVALID_MODIFIED;
         case MODIFIED:
         /*
         NOTHING
         */
             *permAvail = 1;
+            // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
             return MODIFIED;
         case SHARED_STATE:
         /*
@@ -104,30 +110,33 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             if (is_read)
             {
                 *permAvail = 1;
+                // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
                 return SHARED_STATE;
             }
             *permAvail = 0;
             if (destNum == procNum) {
                 *permAvail = 1;
+                // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
                 return MODIFIED;
             }
             // DEST SOURCE
             sendWr(addr, destNum, procNum);
+            // printf("%d's request on %lX returns on line %d\n", procNum, addr, __LINE__);
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
             fprintf(stderr, "IM state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
-            printf("cacheDirectory exit\n");
+            // printf("cacheDirectory exit\n");
             return INVALID_MODIFIED;
         case INVALID_SHARED:
             fprintf(stderr, "IS state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
-            printf("cacheDirectory exit\n");
+            // printf("cacheDirectory exit\n");
             return INVALID_SHARED;
         case SHARED_MODIFIED:
             fprintf(stderr, "MS state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
-            printf("cacheDirectory exit\n");
+            // printf("cacheDirectory exit\n");
             return SHARED_MODIFIED;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
@@ -152,32 +161,32 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
             if (reqType == FETCH) {
                 sendDataBack(addr, replyNum, procNum);
             }
-            printf("processCache exit, %d\n", __LINE__);
+            // printf("processCache exit, %d\n", __LINE__);
             return INVALID;
         case MODIFIED:
             if (reqType = FETCH)
             {
                 sendDataBack(addr, replyNum, procNum);
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return SHARED_STATE;
             }
             else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return INVALID;
             }
-            printf("processCache exit\n");
+            // printf("processCache exit\n");
             return MODIFIED;
         case SHARED_STATE:
             if (reqType = FETCH)
             {
                 sendDataBack(addr, replyNum, procNum);
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return SHARED_STATE;
             }
             else if (reqType = IC_INVALIDATE) {
                 *ca = INVALIDATE;
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return INVALID;
             }
             return SHARED_STATE;
@@ -185,28 +194,28 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return MODIFIED;
             }
-            printf("processCache exit\n");
+            // printf("processCache exit\n");
             return INVALID_MODIFIED;
         case INVALID_SHARED:
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return SHARED_STATE;
             }
-            printf("processCache exit\n");
+            // printf("processCache exit\n");
             return INVALID_SHARED;
         case SHARED_MODIFIED:
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
-                printf("processCache exit\n");
+                // printf("processCache exit\n");
                 return MODIFIED;
             }
-            printf("processCache exit\n");
+            // printf("processCache exit\n");
             return SHARED_MODIFIED;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
