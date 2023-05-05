@@ -77,6 +77,7 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
                 *permAvail = 1;
                 return SHARED_STATE;
             } else if (destNum == procNum && !is_read){
+                *permAvail = 1;
                 return MODIFIED;
             }
             if (is_read) {
