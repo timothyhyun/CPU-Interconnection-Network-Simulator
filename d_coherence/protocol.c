@@ -55,6 +55,7 @@ int findHomeProcessor(uint64_t addr, int procNum) {
 }
 
 coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_states currentState, uint64_t addr, int procNum) {
+    printf("cacheDirectory enter ");
     int dest = findHomeProcessor(addr, procNum);
     switch(currentState)
     {
@@ -68,15 +69,18 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             if (is_read)
             {
                 sendRd(addr, procNum, dest);
+                printf("cacheDirectory exit\n");
                 return INVALID_SHARED;
             }
             sendWr(addr, procNum, dest);
+            printf("cacheDirectory exit\n");
             return INVALID_MODIFIED;
         case MODIFIED:
         /*
         NOTHING
         */
             *permAvail = 1;
+            printf("cacheDirectory exit\n");
             return MODIFIED;
         case SHARED_STATE:
         /*
@@ -88,22 +92,27 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
             if (is_read)
             {
                 *permAvail = 1;
+                printf("cacheDirectory exit\n");
                 return SHARED_STATE;
             }
             *permAvail = 0;
             sendWr(addr, procNum, dest);
+            printf("cacheDirectory exit\n");
             return SHARED_MODIFIED;
         case INVALID_MODIFIED:
             fprintf(stderr, "IM state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
+            printf("cacheDirectory exit\n");
             return INVALID_MODIFIED;
         case INVALID_SHARED:
             fprintf(stderr, "IS state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
+            printf("cacheDirectory exit\n");
             return INVALID_SHARED;
         case SHARED_MODIFIED:
             fprintf(stderr, "MS state on %lx, but request %d\n", addr, is_read);
             *permAvail = 0;
+            printf("cacheDirectory exit\n");
             return SHARED_MODIFIED;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);
@@ -120,31 +129,38 @@ coherence_states cacheDirectory(uint8_t is_read, uint8_t* permAvail, coherence_s
 // Invalidates
 // Fetch
 coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_states currentState, uint64_t addr, int procNum, int rprocNum) {
+    printf("processCache enter ");
     *ca = NO_ACTION;
     switch(currentState)
     {
         case INVALID:
             // Cache does not have. go to memory (out of scope)
+            printf("processCache exit\n");
             return INVALID;
         case MODIFIED:
             if (reqType = FETCH)
             {
                 sendDataBack(addr, procNum, rprocNum);
+                printf("processCache exit\n");
                 return SHARED_STATE;
             }
             else if (reqType = INVALIDATE) {
                 *ca = INVALIDATE;
+                printf("processCache exit\n");
                 return INVALID;
             }
+            printf("processCache exit\n");
             return MODIFIED;
         case SHARED_STATE:
             if (reqType = FETCH)
             {
                 sendDataBack(addr, procNum, rprocNum);
+                printf("processCache exit\n");
                 return SHARED_STATE;
             }
             else if (reqType = INVALIDATE) {
                 *ca = INVALIDATE;
+                printf("processCache exit\n");
                 return INVALID;
             }
             return SHARED_STATE;
@@ -152,22 +168,28 @@ coherence_states processCache(bus_req_type reqType, cache_action* ca, coherence_
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
+                printf("processCache exit\n");
                 return MODIFIED;
             }
+            printf("processCache exit\n");
             return INVALID_MODIFIED;
         case INVALID_SHARED:
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
+                printf("processCache exit\n");
                 return SHARED_STATE;
             }
+            printf("processCache exit\n");
             return INVALID_SHARED;
         case SHARED_MODIFIED:
             if (reqType == DATA || reqType == SHARED)
             {
                 *ca = DATA_RECV;
+                printf("processCache exit\n");
                 return MODIFIED;
             }
+            printf("processCache exit\n");
             return SHARED_MODIFIED;
         default:
             fprintf(stderr, "State %d not supported, found on %lx\n", currentState, addr);

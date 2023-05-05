@@ -36,6 +36,7 @@ int countDown = 0;
 // send from directory to cache
 // directoryNum sending fetch request to procNum which will send data back to rprocNum
 void sendFetch(uint64_t addr, int procNum, int rprocNum, int directoryNum) {
+    // printf("sendFetch enter ");
     // need additional arg in busreq for destination
     if (procNum == directoryNum) {
         coherComp->cacheReq(FETCH, addr, procNum, rprocNum);
@@ -43,10 +44,12 @@ void sendFetch(uint64_t addr, int procNum, int rprocNum, int directoryNum) {
         // interconnect request
         inter_sim->busReq(FETCH, addr, procNum, directoryNum, rprocNum);
     }
+    // printf("sendFetch exit\n");
 }
 
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
+    // printf("sendInvalidate enter ");
     if (procNum == directoryNum) {
         coherComp->cacheReq(IC_INVALIDATE, addr, procNum, -1);
     } else {
@@ -54,6 +57,7 @@ void sendInvalidate(uint64_t addr, int procNum, int directoryNum){
         // No reply needed
         inter_sim->busReq(IC_INVALIDATE, addr, procNum, directoryNum, -1);
     }
+    // printf("sendInvalidate exit\n");
 }
 
 
@@ -92,6 +96,7 @@ void registerCoher(coher* cc)
 }
 
 directory_states *getDirectoryState(uint64_t addr, int procNum) {
+    // printf("getDirectoryState enter ");
     directory_states *lookState = (directory_states *) tree_find(directoryStates[procNum], addr);
     if (lookState == NULL){
         // In practice we should have an init function for this
@@ -100,18 +105,21 @@ directory_states *getDirectoryState(uint64_t addr, int procNum) {
         lookState->directory = calloc(sizeof(bool), processorCount);
         tree_insert(directoryStates[procNum], addr, (void *)lookState);
     }
-
+    // printf("getDirectoryState exit\n");
     return lookState;
 }
 
 void setDirectoryState(uint64_t addr, int processorNum, directory_states *nextState)
 {
+    // printf("setDirectory enter ");
     tree_insert(directoryStates[processorNum], addr, (void*)nextState);
+    // printf("setDirectory exit ");
 }
 
 // rprocnum: originating processor
 // procnum: current processor number
 directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum) {
+    // printf("directory call enter ");
     directory_states *currentState = getDirectoryState(addr, procNum);
     switch(currentState->state) {
         case D_EXCLUSIVE:
@@ -195,6 +203,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
             break;
     }
     setDirectoryState(addr, procNum, currentState);
+    // printf("directory call exit\n");
 }
 
 
@@ -202,6 +211,7 @@ directory_status directory(bus_req_type reqType, uint64_t addr, int procNum, int
 // all go to directory
 void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum)
 {
+    //printf("directory req enter ");
     // Add to pending Queue
     // if (pendingRequest == NULL) {
         directory_req* nextReq = calloc(1, sizeof(directory_req));
@@ -214,6 +224,7 @@ void directoryReq(bus_req_type reqType, uint64_t addr, int procNum, int rprocNum
         directory(pendingRequest->brt, pendingRequest-> addr, pendingRequest->procNum, pendingRequest->rprocNum);
         free(pendingRequest);
         pendingRequest = NULL;
+        // printf("directory req exit\n");
         return;
     // } else {
     //     directory_req* nextReq = calloc(1, sizeof(directory_req));
@@ -247,6 +258,7 @@ int tick()
     //         countDown = CONTROLLER_DELAY;
     //     }
     // }
+    // printf("tick directory\n");
     return 0;
 }
 

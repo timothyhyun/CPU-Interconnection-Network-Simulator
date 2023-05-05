@@ -28,7 +28,7 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
 cache* init(cache_sim_args* csa)
 {
     int op;
-    
+
     coherComp = csa->coherComp;
     coherComp->registerCacheInterface(coherCallback);
 
@@ -39,41 +39,41 @@ cache* init(cache_sim_args* csa)
         {
             // Lines per set
             case 'E':
-            
+
                 break;
-            
+
             // Sets per cache
             case 's':
-            
+
                 break;
-                
+
             // block size in bits
             case 'b':
                 coherComp->registerCacheParameters(0, optarg);
                 blockSize = 0x1 << atoi(optarg);
                 break;
-                
+
             // entries in victim cache
             case 'i':
-            
+
                 break;
-                
+
             // bits in a RRIP-based replacement policy
             case 'R':
-            
+
                 break;
         }
     }
-    
+
     self = malloc(sizeof(cache));
     self->memoryRequest = memoryRequest;
     self->si.tick = tick;
     self->si.finish = finish;
     self->si.destroy = destroy;
-    
+
     memCallback = calloc(processorCount, sizeof(memCallbackFunc));
     pendingTag = calloc(processorCount, sizeof(int));
-    
+
     return self;
 }
 
@@ -93,13 +93,13 @@ void coherCallback(int type, int processorNum, int64_t addr)
 {
     assert(pendReq != NULL);
     assert(processorNum < processorCount);
-    
+
     if (pendReq->processorNum == processorNum &&
         pendReq->addr == addr)
     {
         pendingRequest* pr = pendReq;
         pendReq = pendReq->next;
-        
+
         pr->next = readyReq;
         readyReq = pr;
     }
@@ -107,14 +107,14 @@ void coherCallback(int type, int processorNum, int64_t addr)
     {
         pendingRequest* prevReq = pendReq;
         pendingRequest* pr = pendReq->next;
-        
+
         while (pr != NULL)
         {
             if (pr->processorNum == processorNum &&
                 pr->addr == addr)
             {
                 prevReq->next = pr->next;
-                
+
                 pr->next = readyReq;
                 readyReq = pr;
                 break;
@@ -122,7 +122,7 @@ void coherCallback(int type, int processorNum, int64_t addr)
             pr = pr->next;
             prevReq = prevReq->next;
         }
-        
+
         if (pr == NULL && CADSS_VERBOSE == 1)
         {
             pr = pendReq;
@@ -131,7 +131,7 @@ void coherCallback(int type, int processorNum, int64_t addr)
                 printf("W: %p (%lx %d)\t", pr, pr->addr, pr->processorNum);
                 pr = pr->next;
             }
-            
+
         }
         assert(pr != NULL);
     }
@@ -141,17 +141,17 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
 {
     assert(op != NULL);
     assert(callback != NULL);
-    
+    printf("enter memReq ");
     // As a simplifying assumption, requests do not cross cache lines
     uint64_t addr = (op->memAddress & ~(blockSize - 1));
     uint8_t perm = coherComp->permReq((op->op == MEM_LOAD), addr, processorNum);
-    
+
     pendingRequest* pr = malloc(sizeof(pendingRequest));
     pr->tag = tag;
     pr->addr = addr;
     pr->callback = callback;
     pr->processorNum = processorNum;
-    
+
     if (perm == 1)
     {
         // create callback for next tick
@@ -164,12 +164,14 @@ void memoryRequest(trace_op* op, int processorNum, int64_t tag, void(*callback)(
         pr->next = pendReq;
         pendReq = pr;
     }
+    printf("exit memReq\n");
 }
 
 int tick()
 {
+    // printf("ticking cache\n");
     coherComp->si.tick();
-    
+
     pendingRequest* pr = readyReq;
     while (pr != NULL)
     {
@@ -179,7 +181,7 @@ int tick()
         free(t);
     }
     readyReq = NULL;
-    
+
     return 1;
 }
 

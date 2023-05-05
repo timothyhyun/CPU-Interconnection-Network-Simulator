@@ -114,6 +114,7 @@ void setState(uint64_t addr, int processorNum, coherence_states nextState)
 // Do I need to add origin processor? Or else how do I send data back????
 uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rprocessorNum)
 {
+    printf("enter busReq ");
     if (processorNum < 0 || processorNum >= processorCount)
     {
         // ERROR
@@ -153,7 +154,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
         setState(addr, processorNum, nextState);
     }
 
-    printf("Finished recieve cache request");
+    printf("Finished recieve cache request\n");
     return 0;
 }
 
@@ -163,6 +164,7 @@ uint8_t busReq(bus_req_type reqType, uint64_t addr, int processorNum, int rproce
 
 uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
 {
+    printf("enter permReq ");
     if (processorNum < 0 || processorNum >= processorCount)
     {
         // ERROR
@@ -174,6 +176,7 @@ uint8_t permReq(uint8_t is_read, uint64_t addr, int processorNum)
     nextState = cacheDirectory(is_read, &permAvail, currentState, addr, processorNum);
     setState(addr, processorNum, nextState);
 
+    printf("permReq finish\n");
     return permAvail;
 }
 
@@ -186,7 +189,7 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
     // Add to pending Queue
 
 
-    printf("Recieving request from interconnect");
+    printf("Recieving request from interconnect\n");
     if (pendingRequest == NULL) {
         cache_req* nextReq = calloc(1, sizeof(cache_req));
         nextReq->brt = reqType;
@@ -213,6 +216,8 @@ void cacheReq(bus_req_type reqType, uint64_t addr, int processorNum, int nextPro
     }
     free(pendingRequest);
     pendingRequest = NULL;
+
+    printf("cacheReq exit\n");
 }
 
 
@@ -246,6 +251,7 @@ int tick()
 
 
     // direct_sim->si.tick();
+    // printf("tick coherence\n");
     return inter_sim->si.tick();
 
 

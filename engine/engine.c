@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 
     if (interName == NULL)
     {
-        isim = loadSim("interconnect_impl", "interconnect");
+        isim = loadSim("interconnect", "interconnect");
     }
     else
     {
