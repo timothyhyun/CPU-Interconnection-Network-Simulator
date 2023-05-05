@@ -38,7 +38,7 @@ int countDown = 0;
 void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
     // printf("sendFetch enter ");
     // need additional arg in busreq for destination
-    if (procNum == directoryNum) {
+    if (destNum == sourceNum) {
         coherComp->cacheReq(FETCH, addr, destNum, replyNum);
     } else {
         // interconnect request
@@ -50,7 +50,7 @@ void sendFetch(uint64_t addr, int destNum, int sourceNum, int replyNum) {
 // directoryNum sending invalidate to procNum
 void sendInvalidate(uint64_t addr, int destNum, int sourceNum, int replyNum){
     // printf("sendInvalidate enter ");
-    if (procNum == directoryNum) {
+    if (sourceNum == destNum) {
         coherComp->cacheReq(IC_INVALIDATE, addr, destNum, replyNum);
     } else {
         // Interconnect request
